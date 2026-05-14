@@ -1,39 +1,3 @@
-function renderNovelPage() {
-  const root = document.getElementById('novelPage');
-  if (!root) return;
-  const id = new URLSearchParams(location.search).get('id');
-  const novels = NK.getNovels();
-  const novel = novels.find((item) => item.id === id) || novels[0];
-  if (!novel) { root.innerHTML = '<div class="container panel">لا توجد رواية للعرض.</div>'; return; }
-  novel.reads = Number(novel.reads || 0) + 1;
-  NK.saveNovels(novels);
-  document.title = `${novel.title} | مملكة الروايات`;
-  root.innerHTML = `<section class="container novel-hero">
-    <div class="novel-art">📚</div>
-    <div class="panel novel-info">
-      <span class="eyebrow">${NK.escapeHtml(novel.type)} · ${NK.escapeHtml(novel.status)}</span>
-      <h1>${NK.escapeHtml(novel.title)}</h1>
-      <p class="lead">${NK.escapeHtml(novel.description)}</p>
-      <p class="novel-meta">✍️ ${NK.escapeHtml(novel.author)} · ${NK.escapeHtml(novel.category)} · 👁️ ${Number(novel.reads).toLocaleString('ar')} · ⭐ ${novel.rating}</p>
-    </div>
-  </section>
-  <section class="container section">
-    <div class="section-head"><div><h2>الفصول</h2><p class="muted">ابدأ القراءة بالترتيب أو انتقل للفصل الذي تريده.</p></div></div>
-    <div class="chapter-list">${novel.chapters.map((chapter, index) => `<article class="chapter"><span class="tag">الفصل ${index + 1}</span><h3>${NK.escapeHtml(chapter.title)}</h3><p class="chapter-body">${NK.escapeHtml(chapter.body)}</p></article>`).join('')}</div>
-  </section>
-  <section class="container section"><div class="panel"><h2>التعليقات</h2><form id="commentForm" class="publish-form"><input class="form-control" name="name" placeholder="اسمك" required><textarea class="form-control" name="text" placeholder="اكتب تعليقك" required></textarea><button class="btn btn-primary">نشر التعليق</button></form><div id="commentsList" class="comments"></div></div></section>`;
-  const user = NK.currentUser();
-  const nameInput = root.querySelector('[name="name"]');
-  if (user) { nameInput.value = user.name; nameInput.readOnly = true; }
-  root.querySelector('#commentForm').addEventListener('submit', (event) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    NK.addComment({ novelId: novel.id, name: form.get('name'), text: form.get('text') });
-    event.currentTarget.reset();
-    if (user) nameInput.value = user.name;
-    renderComments(novel.id);
-  });
-  renderComments(novel.id);
 function chapterTemplate(chapter, index) {
   return `<article class="chapter">
     <span class="tag">الفصل ${index + 1}</span>
@@ -42,33 +6,40 @@ function chapterTemplate(chapter, index) {
   </article>`;
 }
 
-function renderComments(novelId) {
+function commentTemplate(comment) {
+  return `<div class="comment">
+    <strong>${NK.escapeHtml(comment.name)}</strong>
+    <p>${NK.escapeHtml(comment.text)}</p>
+    <span class="muted">${new Date(comment.createdAt).toLocaleDateString('ar')}</span>
+  </div>`;
+}
+
 async function renderComments(novelId) {
   const list = document.getElementById('commentsList');
   if (!list) return;
-  const comments = NK.getComments(novelId).slice().reverse();
-  list.innerHTML = comments.length ? comments.map((comment) => `<div class="comment"><strong>${NK.escapeHtml(comment.name)}</strong><p>${NK.escapeHtml(comment.text)}</p><span class="muted">${new Date(comment.createdAt).toLocaleDateString('ar')}</span></div>`).join('') : '<p class="muted">لا توجد تعليقات بعد.</p>';
+
   list.innerHTML = '<p class="muted">جاري تحميل التعليقات...</p>';
 
   try {
     const comments = await NKBackend.getComments(novelId);
     list.innerHTML = comments.length
-      ? comments.map((comment) => `<div class="comment"><strong>${NK.escapeHtml(comment.name)}</strong><p>${NK.escapeHtml(comment.text)}</p><span class="muted">${new Date(comment.createdAt).toLocaleDateString('ar')}</span></div>`).join('')
+      ? comments.map(commentTemplate).join('')
       : '<p class="muted">لا توجد تعليقات بعد.</p>';
   } catch (error) {
     list.innerHTML = `<p class="muted">${NK.escapeHtml(NK.formatError(error, 'تعذر تحميل التعليقات.'))}</p>`;
   }
 }
 
-function handlePublish(event) {
 async function renderNovelPage() {
   const root = document.getElementById('novelPage');
   if (!root) return;
+
   root.innerHTML = '<section class="container section"><div class="panel">جاري تحميل الرواية...</div></section>';
 
   try {
     const id = new URLSearchParams(location.search).get('id');
     const novel = id ? await NKBackend.getNovel(id) : null;
+
     if (!novel) {
       root.innerHTML = '<section class="container section"><div class="panel"><h1>الرواية غير موجودة</h1><p class="muted">ربما حُذفت أو لم تتم الموافقة عليها بعد.</p><a class="btn btn-primary" href="index.html">عودة للرئيسية</a></div></section>';
       return;
@@ -77,50 +48,87 @@ async function renderNovelPage() {
     await NKBackend.incrementNovelReads(novel.id);
     novel.reads += 1;
     document.title = `${novel.title} | مملكة الروايات`;
+
+    const chapters = Array.isArray(novel.chapters) ? novel.chapters : [];
+    const coverMarkup = novel.cover
+      ? `<img src="${NK.escapeHtml(novel.cover)}" alt="غلاف ${NK.escapeHtml(novel.title)}">`
+      : '📚';
+
     root.innerHTML = `<section class="container novel-hero">
-      <div class="novel-art">📚</div>
+<div class="novel-art">${coverMarkup}</div>
       <div class="panel novel-info">
         <span class="eyebrow">${NK.escapeHtml(novel.type)} · ${NK.escapeHtml(novel.status)}</span>
         <h1>${NK.escapeHtml(novel.title)}</h1>
         <p class="lead">${NK.escapeHtml(novel.description)}</p>
-        <p class="novel-meta">✍️ ${NK.escapeHtml(novel.author)} · ${NK.escapeHtml(novel.category)} · 👁️ ${Number(novel.reads).toLocaleString('ar')} · ⭐ ${novel.rating}</p>
+<p class="novel-meta">✍️ ${NK.escapeHtml(novel.author)} · ${NK.escapeHtml(novel.category)} · 👁️ ${Number(novel.reads).toLocaleString('ar')} · ⭐ ${Number(novel.rating).toFixed(1)}</p>
       </div>
     </section>
     <section class="container section">
-      <div class="section-head"><div><h2>الفصول</h2><p class="muted">ابدأ القراءة بالترتيب أو انتقل للفصل الذي تريده.</p></div></div>
-      <div class="chapter-list">${novel.chapters.length ? novel.chapters.map(chapterTemplate).join('') : '<div class="empty-state">لم تُضاف فصول بعد.</div>'}</div>
+<div class="section-head">
+        <div>
+          <h2>الفصول</h2>
+          <p class="muted">ابدأ القراءة بالترتيب أو انتقل للفصل الذي تريده.</p>
+        </div>
+      </div>
+      <div class="chapter-list">${chapters.length ? chapters.map(chapterTemplate).join('') : '<p class="muted">لا توجد فصول منشورة بعد.</p>'}</div>
     </section>
-    <section class="container section"><div class="panel"><h2>التعليقات</h2><form id="commentForm" class="publish-form"><input class="form-control" name="name" placeholder="اسمك" required><textarea class="form-control" name="text" placeholder="اكتب تعليقك" required></textarea><button class="btn btn-primary">نشر التعليق</button></form><div id="commentsList" class="comments"></div></div></section>`;
+    <section class="container section">
+      <div class="panel">
+        <h2>التعليقات</h2>
+        <form id="commentForm" class="publish-form">
+          <div class="form-field">
+            <label for="commentName">اسمك</label>
+            <input class="form-control" id="commentName" name="name" placeholder="اسمك" required>
+          </div>
+          <div class="form-field">
+            <label for="commentText">تعليقك</label>
+            <textarea class="form-control" id="commentText" name="text" placeholder="اكتب تعليقك" required></textarea>
+          </div>
+          <button class="btn btn-primary" type="submit">نشر التعليق</button>
+        </form>
+        <div id="commentsList" class="comments"></div>
+      </div>
+    </section>`;
 
     const user = await NK.currentUser();
     const nameInput = root.querySelector('[name="name"]');
-    if (user) { nameInput.value = user.name; nameInput.readOnly = true; }
+if (user && nameInput) {
+      nameInput.value = user.name;
+      nameInput.readOnly = true;
+    }
 
-    root.querySelector('#commentForm').addEventListener('submit', async (event) => {
+    root.querySelector('#commentForm')?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const form = new FormData(event.currentTarget);
+      const button = event.currentTarget.querySelector('button[type="submit"]');
+      button.disabled = true;
+
       try {
-        await NKBackend.addComment({ novelId: novel.id, name: form.get('name'), text: form.get('text') });
-        event.currentTarget.reset();
-        if (user) nameInput.value = user.name;
+        await NKBackend.addComment({
+          novelId: novel.id,
+          name: String(form.get('name')).trim(),
+          text: String(form.get('text')).trim()
+        });
         NK.showToast('تم نشر التعليق بنجاح.');
-        renderComments(novel.id);
+event.currentTarget.reset();
+        if (user && nameInput) nameInput.value = user.name;
+        await renderComments(novel.id);
       } catch (error) {
         NK.showToast(NK.formatError(error, 'تعذر نشر التعليق.'), 'error');
+      } finally {
+        button.disabled = false;
       }
     });
 
-    renderComments(novel.id);
+await renderComments(novel.id);
   } catch (error) {
-    root.innerHTML = `<section class="container section"><div class="panel"><h1>تعذر تحميل الرواية</h1><p class="muted">${NK.escapeHtml(NK.formatError(error))}</p></div></section>`;
+    root.innerHTML = `<section class="container section"><div class="panel">${NK.escapeHtml(NK.formatError(error, 'تعذر تحميل الرواية.'))}</div></section>`;
   }
 }
 
 async function handlePublish(event) {
   event.preventDefault();
-  const user = NK.currentUser();
-  if (!user) { NK.showToast('سجّل الدخول أولًا لنشر روايتك.', 'error'); setTimeout(() => location.href = 'login.html', 900); return; }
-  const form = new FormData(event.currentTarget);
+  
   const user = await NK.currentUser();
   if (!user) {
     NK.showToast('سجّل الدخول أولًا لنشر روايتك.', 'error');
@@ -130,29 +138,14 @@ async function handlePublish(event) {
 
   const formElement = event.currentTarget;
   const button = formElement.querySelector('button[type="submit"]');
+  const originalText = button?.textContent || 'نشر الرواية';
   const form = new FormData(formElement);
   const title = String(form.get('title')).trim();
-  const novel = {
-    id: NK.slugify(title),
-    title,
-    author: String(form.get('author')).trim() || user.name,
-    category: form.get('category'),
-    status: form.get('status'),
-    type: form.get('type'),
-    reads: 0,
-    rating: 4.5,
-    description: String(form.get('description')).trim(),
-    chapters: [{ title: String(form.get('chapterTitle')).trim() || 'الفصل الأول', body: String(form.get('chapterBody')).trim() }],
-    publishedAt: new Date().toISOString().slice(0, 10),
-    ownerId: user.id
-  };
-  const novels = NK.getNovels();
-  novels.unshift(novel);
-  NK.saveNovels(novels);
-  NK.showToast('تم نشر الرواية بنجاح.');
-  setTimeout(() => location.href = `novel.html?id=${encodeURIComponent(novel.id)}`, 800);
-  button.disabled = true;
-  button.textContent = 'جاري النشر...';
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'جاري الإرسال...';
+  }
 
   try {
     const novel = await NKBackend.createNovel({
@@ -162,50 +155,92 @@ async function handlePublish(event) {
       category: String(form.get('category')),
       status: String(form.get('status')),
       type: String(form.get('type')),
+      cover: String(form.get('cover') || '').trim(),
       description: String(form.get('description')).trim(),
-      chapters: [{ title: String(form.get('chapterTitle')).trim() || 'الفصل الأول', body: String(form.get('chapterBody')).trim() }]
+chapters: [{
+        title: String(form.get('chapterTitle')).trim() || 'الفصل الأول',
+        body: String(form.get('chapterBody')).trim()
+      }]
     });
 
     NK.showToast(user.role === 'admin' ? 'تم نشر الرواية بنجاح.' : 'تم إرسال الرواية للمراجعة. ستظهر بعد موافقة الإدارة.');
+    formElement.reset();
     setTimeout(() => { location.href = `novel.html?id=${encodeURIComponent(novel.id)}`; }, 900);
   } catch (error) {
     NK.showToast(NK.formatError(error, 'تعذر نشر الرواية.'), 'error');
   } finally {
-    button.disabled = false;
-    button.textContent = 'نشر الرواية';
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
   }
 }
 
-function renderDashboard() {
+function dashboardNovelRow(novel) {
+  return `<article class="activity-item">
+    <div>
+      <h3>${NK.escapeHtml(novel.title)}</h3>
+      <p class="muted">${NK.escapeHtml(novel.category)} · ${NK.escapeHtml(novel.status)} · ${Number(novel.reads).toLocaleString('ar')} قراءة</p>
+    </div>
+    <span class="tag">${novel.approved ? 'منشورة' : 'بانتظار المراجعة'}</span>
+  </article>`;
+}
+
 async function renderDashboard() {
   const root = document.getElementById('dashboardRoot');
   if (!root) return;
-  const user = NK.currentUser();
-  if (!user) { root.innerHTML = '<div class="panel"><h1>يلزم تسجيل الدخول</h1><p class="muted">سجّل الدخول للوصول إلى لوحة التحكم.</p><a class="btn btn-primary" href="login.html">تسجيل الدخول</a></div>'; return; }
-  const novels = NK.getNovels();
-  const mine = user.role === 'admin' ? novels : novels.filter((novel) => novel.ownerId === user.id || novel.author === user.name);
-  root.innerHTML = `<div class="dashboard-hero"><div><h1>أهلًا، ${NK.escapeHtml(user.name)}</h1><p class="muted">تابع رواياتك وإحصاءات المنصة من مكان واحد.</p></div><a class="btn btn-primary" href="publish.html">نشر رواية جديدة</a></div>
-  <div class="stats-grid"><div class="stat-card"><span>الروايات</span><strong>${mine.length}</strong></div><div class="stat-card"><span>القراءات</span><strong>${mine.reduce((sum, novel) => sum + Number(novel.reads || 0), 0).toLocaleString('ar')}</strong></div><div class="stat-card"><span>التعليقات</span><strong>${mine.reduce((sum, novel) => sum + NK.getComments(novel.id).length, 0)}</strong></div><div class="stat-card"><span>الدور</span><strong>${user.role === 'admin' ? 'مدير' : 'كاتب'}</strong></div></div>
-  <div class="dashboard-grid"><section class="panel table-wrap"><h2>رواياتي</h2><table><thead><tr><th>العنوان</th><th>التصنيف</th><th>الحالة</th><th>القراءات</th><th></th></tr></thead><tbody>${mine.map((novel) => `<tr><td>${NK.escapeHtml(novel.title)}</td><td>${NK.escapeHtml(novel.category)}</td><td><span class="status published">${NK.escapeHtml(novel.status)}</span></td><td>${Number(novel.reads).toLocaleString('ar')}</td><td><a href="novel.html?id=${encodeURIComponent(novel.id)}">عرض</a></td></tr>`).join('') || '<tr><td colspan="5">لم تنشر روايات بعد.</td></tr>'}</tbody></table></section><aside class="panel"><h2>آخر النشاط</h2><div class="activity-list">${novels.slice(0, 4).map((novel) => `<div class="activity-item">نُشرت رواية <strong>${NK.escapeHtml(novel.title)}</strong><br><span class="muted">${novel.publishedAt || 'اليوم'}</span></div>`).join('')}</div></aside></div>`;
-  root.innerHTML = '<div class="panel">جاري تحميل لوحة التحكم...</div>';
+
+  root.innerHTML = '<section class="panel"><p class="muted">جاري تحميل لوحة التحكم...</p></section>';
 
   try {
     const { user, novels, commentsCount, allNovels } = await NKBackend.getDashboardData();
+
     if (!user) {
-      root.innerHTML = '<div class="panel"><h1>يلزم تسجيل الدخول</h1><p class="muted">سجّل الدخول للوصول إلى لوحة التحكم.</p><a class="btn btn-primary" href="login.html">تسجيل الدخول</a></div>';
+root.innerHTML = `<section class="panel">
+        <span class="eyebrow">تسجيل الدخول مطلوب</span>
+        <h1>لوحة التحكم</h1>
+        <p class="muted">سجّل الدخول لمتابعة رواياتك وتعليقاتك.</p>
+        <a class="btn btn-primary" href="login.html">تسجيل الدخول</a>
+      </section>`;
       return;
     }
 
-    root.innerHTML = `<div class="dashboard-hero"><div><h1>أهلًا، ${NK.escapeHtml(user.name)}</h1><p class="muted">تابع رواياتك وإحصاءات المنصة من قاعدة البيانات مباشرة.</p></div><a class="btn btn-primary" href="publish.html">نشر رواية جديدة</a></div>
-    <div class="stats-grid"><div class="stat-card"><span>الروايات</span><strong>${novels.length}</strong></div><div class="stat-card"><span>القراءات</span><strong>${novels.reduce((sum, novel) => sum + Number(novel.reads || 0), 0).toLocaleString('ar')}</strong></div><div class="stat-card"><span>التعليقات</span><strong>${commentsCount}</strong></div><div class="stat-card"><span>الدور</span><strong>${user.role === 'admin' ? 'مدير' : user.role === 'author' ? 'كاتب' : 'قارئ'}</strong></div></div>
-    <div class="dashboard-grid"><section class="panel table-wrap"><h2>${user.role === 'admin' ? 'كل الروايات' : 'رواياتي'}</h2><table><thead><tr><th>العنوان</th><th>التصنيف</th><th>الحالة</th><th>الموافقة</th><th>القراءات</th><th></th></tr></thead><tbody>${novels.map((novel) => `<tr><td>${NK.escapeHtml(novel.title)}</td><td>${NK.escapeHtml(novel.category)}</td><td><span class="status published">${NK.escapeHtml(novel.status)}</span></td><td>${novel.approved ? 'منشورة' : 'قيد المراجعة'}</td><td>${Number(novel.reads).toLocaleString('ar')}</td><td><a href="novel.html?id=${encodeURIComponent(novel.id)}">عرض</a></td></tr>`).join('') || '<tr><td colspan="6">لم تنشر روايات بعد.</td></tr>'}</tbody></table></section><aside class="panel"><h2>آخر النشاط</h2><div class="activity-list">${(allNovels || novels).slice(0, 4).map((novel) => `<div class="activity-item">رواية <strong>${NK.escapeHtml(novel.title)}</strong><br><span class="muted">${novel.publishedAt || 'اليوم'}</span></div>`).join('') || '<p class="muted">لا يوجد نشاط بعد.</p>'}</div></aside></div>`;
+const totalNovels = user.role === 'admin' ? allNovels.length : novels.length;
+    const pendingNovels = novels.filter((novel) => !novel.approved).length;
+
+    root.innerHTML = `<section class="dashboard-hero panel">
+      <div>
+        <span class="eyebrow">${user.role === 'admin' ? 'مدير المنصة' : 'حساب الكاتب'}</span>
+        <h1>مرحبًا، ${NK.escapeHtml(user.name)}</h1>
+        <p class="muted">${NK.escapeHtml(user.email)}</p>
+      </div>
+      <a class="btn btn-primary" href="publish.html">نشر رواية جديدة</a>
+    </section>
+
+    <section class="stats-grid">
+      <article class="stat-card"><strong>${totalNovels}</strong><span>رواية</span></article>
+      <article class="stat-card"><strong>${pendingNovels}</strong><span>بانتظار المراجعة</span></article>
+      <article class="stat-card"><strong>${commentsCount}</strong><span>تعليق</span></article>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <h2>${user.role === 'admin' ? 'كل الروايات' : 'رواياتي'}</h2>
+          <p class="muted">تابع حالة الروايات وأرقام القراءة.</p>
+        </div>
+      </div>
+      <div class="activity-list">
+        ${novels.length ? novels.map(dashboardNovelRow).join('') : '<p class="muted">لا توجد روايات بعد.</p>'}
+      </div>
+    </section>`;
   } catch (error) {
-    root.innerHTML = `<div class="panel"><h1>تعذر تحميل لوحة التحكم</h1><p class="muted">${NK.escapeHtml(NK.formatError(error))}</p></div>`;
+root.innerHTML = `<section class="panel"><p class="muted">${NK.escapeHtml(NK.formatError(error, 'تعذر تحميل لوحة التحكم.'))}</p></section>`;
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   renderNovelPage();
+    renderDashboard();
   document.getElementById('publishForm')?.addEventListener('submit', handlePublish);
-  renderDashboard();
 });
