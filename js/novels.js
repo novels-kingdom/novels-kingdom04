@@ -109,7 +109,7 @@ if (user && nameInput) {
           name: String(form.get('name')).trim(),
           text: String(form.get('text')).trim()
         });
-        NK.showToast('تم نشر التعليق بنجاح.');
+                NK.showToast(user?.role === 'admin' ? 'تم نشر التعليق بنجاح.' : 'تم إرسال التعليق للمراجعة. سيظهر بعد موافقة الإدارة.');
 event.currentTarget.reset();
         if (user && nameInput) nameInput.value = user.name;
         await renderComments(novel.id);
