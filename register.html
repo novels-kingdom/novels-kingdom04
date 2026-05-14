@@ -20,6 +20,7 @@
       <h1>إنشاء حساب</h1>
       <p class="muted">سجّل كقارئ أو كاتب وابدأ رحلتك داخل مملكة الروايات.</p>
       <form class="auth-form" id="registerForm">
+        <div class="auth-message info" data-auth-message hidden></div>
         <div class="form-field">
           <label for="name">الاسم</label>
           <input class="form-control" id="name" name="name" autocomplete="name" required>
@@ -31,6 +32,10 @@
         <div class="form-field">
           <label for="password">كلمة المرور</label>
           <input class="form-control" id="password" name="password" type="password" autocomplete="new-password" minlength="6" required>
+        </div>
+        <div class="form-field">
+          <label for="confirmPassword">تأكيد كلمة المرور</label>
+          <input class="form-control" id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="6" required>
         </div>
         <div class="form-field">
           <label for="role">نوع الحساب</label>
