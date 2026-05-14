@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>نشر رواية | مملكة الروايات</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css"><link rel="stylesheet" href="css/novel.css">
+</head>
+<body>
+  <div id="app-header"></div>
+  <main class="container publish-layout">
+    <aside class="panel">
+      <span class="eyebrow">مساحة الكتّاب</span>
+      <h1>انشر روايتك</h1>
+      <p class="muted">املأ البيانات الأساسية وأضف الفصل الأول. تُحفظ البيانات محليًا داخل المتصفح لتجربة سريعة.</p>
+    </aside>
+    <section class="panel">
+      <form class="publish-form" id="publishForm">
+        <div class="form-row"><input class="form-control" name="title" placeholder="عنوان الرواية" required><input class="form-control" name="author" placeholder="اسم الكاتب"></div>
+        <div class="form-row"><select class="form-control" name="category"><option>غموض</option><option>فانتازيا</option><option>رومانسي</option><option>مغامرة</option></select><select class="form-control" name="status"><option>مستمرة</option><option>مكتملة</option><option>مسودة</option></select></div>
+        <select class="form-control" name="type"><option>عربية</option><option>مترجمة</option></select>
+        <textarea class="form-control" name="description" placeholder="نبذة قصيرة عن الرواية" required></textarea>
+        <input class="form-control" name="chapterTitle" placeholder="عنوان الفصل الأول" required>
+        <textarea class="form-control" name="chapterBody" placeholder="نص الفصل الأول" required></textarea>
+        <button class="btn btn-primary" type="submit">نشر الرواية</button>
+      </form>
+    </section>
+  </main>
+  <div id="app-footer"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/novels.js"></script>
+</body>
+</html>
