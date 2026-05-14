@@ -1,30 +1,100 @@
-@@ -6,28 +6,31 @@
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>نشر رواية | مملكة الروايات</title>
+  <meta name="description" content="انشر روايتك أو فصلك الأول في مملكة الروايات بعد تسجيل الدخول، ثم أرسلها للمراجعة قبل ظهورها للقراء.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css"><link rel="stylesheet" href="css/novel.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/novel.css">
 </head>
 <body>
   <div id="app-header"></div>
+
   <main class="container publish-layout">
     <aside class="panel">
       <span class="eyebrow">مساحة الكتّاب</span>
       <h1>انشر روايتك</h1>
-      <p class="muted">املأ البيانات الأساسية وأضف الفصل الأول. تُحفظ البيانات محليًا داخل المتصفح لتجربة سريعة.</p>
+      <p class="muted">املأ البيانات الأساسية وأضف الفصل الأول. سيتم إرسال الرواية للمراجعة قبل ظهورها للقراء.</p>
+      <p class="muted">تأكد من تسجيل الدخول أولًا حتى تُربط الرواية بحسابك داخل Supabase.</p>
     </aside>
-    <section class="panel">
+
+    <section class="panel" aria-labelledby="publishTitle">
+      <h2 id="publishTitle">بيانات الرواية</h2>
       <form class="publish-form" id="publishForm">
-        <div class="form-row"><input class="form-control" name="title" placeholder="عنوان الرواية" required><input class="form-control" name="author" placeholder="اسم الكاتب"></div>
-        <div class="form-row"><select class="form-control" name="category"><option>غموض</option><option>فانتازيا</option><option>رومانسي</option><option>مغامرة</option></select><select class="form-control" name="status"><option>مستمرة</option><option>مكتملة</option><option>مسودة</option></select></div>
-        <select class="form-control" name="type"><option>عربية</option><option>مترجمة</option></select>
-        <textarea class="form-control" name="description" placeholder="نبذة قصيرة عن الرواية" required></textarea>
-        <input class="form-control" name="chapterTitle" placeholder="عنوان الفصل الأول" required>
-        <textarea class="form-control" name="chapterBody" placeholder="نص الفصل الأول" required></textarea>
-        <button class="btn btn-primary" type="submit">نشر الرواية</button>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="title">عنوان الرواية</label>
+            <input class="form-control" id="title" name="title" placeholder="مثال: ظلال الحبر" required>
+          </div>
+          <div class="form-field">
+            <label for="author">اسم الكاتب</label>
+            <input class="form-control" id="author" name="author" placeholder="اتركه فارغًا لاستخدام اسم حسابك">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="category">التصنيف</label>
+            <select class="form-control" id="category" name="category" required>
+              <option>غموض</option>
+              <option>فانتازيا</option>
+              <option>رومانسي</option>
+              <option>مغامرة</option>
+              <option>دراما</option>
+              <option>خيال علمي</option>
+              <option>عام</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="status">حالة الرواية</label>
+            <select class="form-control" id="status" name="status" required>
+              <option>مستمرة</option>
+              <option>مكتملة</option>
+              <option>مسودة</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="type">نوع الرواية</label>
+            <select class="form-control" id="type" name="type" required>
+              <option>عربية</option>
+              <option>مترجمة</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="cover">رابط الغلاف</label>
+            <input class="form-control" id="cover" name="cover" type="url" placeholder="https://example.com/cover.jpg">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="description">نبذة قصيرة</label>
+          <textarea class="form-control" id="description" name="description" placeholder="اكتب نبذة جذابة عن عالم الرواية وشخصياتها" required></textarea>
+        </div>
+
+        <div class="form-field">
+          <label for="chapterTitle">عنوان الفصل الأول</label>
+          <input class="form-control" id="chapterTitle" name="chapterTitle" placeholder="مثال: الباب الذي لا ينام" required>
+        </div>
+
+        <div class="form-field">
+          <label for="chapterBody">نص الفصل الأول</label>
+          <textarea class="form-control" id="chapterBody" name="chapterBody" placeholder="اكتب الفصل الأول هنا" required></textarea>
+        </div>
+
+        <button class="btn btn-primary" type="submit">إرسال الرواية للمراجعة</button>
       </form>
     </section>
   </main>
+
   <div id="app-footer"></div>
-  <script src="js/ui.js"></script><script src="js/novels.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/ui.js"></script>
