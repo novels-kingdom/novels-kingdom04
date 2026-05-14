@@ -1,72 +1,126 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>قراءة الرواية | مملكة الروايات</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
-  <style>:root{--bg:#0a0f18;--panel:#101828;--card:#152238;--text:#f4f1ea;--muted:#b7bfd1;--accent:#c9a86a;--line:rgba(255,255,255,.09);--radius:20px;--shadow:0 18px 50px rgba(0,0,0,.28);--max:1000px}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top right,rgba(201,168,106,.14),transparent 30%),var(--bg);color:var(--text);font-family:"Cairo",system-ui,sans-serif;line-height:1.95}.container{max-width:var(--max);margin:auto;padding:0 18px}a{text-decoration:none;color:inherit}.muted{color:var(--muted)}.topbar{position:sticky;top:0;z-index:10;background:rgba(10,15,24,.82);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}.nav{min-height:72px;display:flex;align-items:center;justify-content:space-between}.brand{display:flex;gap:10px;align-items:center;font-weight:800}.mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--accent),#f0d9a8);display:grid;place-items:center;color:#111}.btn{padding:11px 16px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);font:inherit;cursor:pointer;display:inline-flex;gap:8px}.btn.primary{background:linear-gradient(135deg,var(--accent),#e2c892);color:#171717;font-weight:800}.hero,.panel{background:linear-gradient(180deg,rgba(21,34,56,.98),rgba(16,24,40,.98));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.hero{display:grid;grid-template-columns:280px 1fr;gap:22px;padding:22px;margin:28px 0}.cover{min-height:360px;border-radius:18px;background:center/cover;border:1px solid var(--line)}h1{font-size:clamp(2rem,4vw,3.3rem);line-height:1.2;margin:10px 0}.tag{display:inline-flex;padding:7px 12px;border-radius:999px;background:rgba(201,168,106,.14);color:#f6e4bf;border:1px solid rgba(201,168,106,.2)}.chapter{padding:30px;margin-bottom:22px}.chapter-body{font-family:"Noto Naskh Arabic",serif;font-size:1.25rem;white-space:pre-wrap}.form{display:grid;gap:12px}.form input,.form textarea{padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--text);font:inherit}.form textarea{min-height:110px}.comment{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.035);margin:10px 0}@media(max-width:760px){.hero{grid-template-columns:1fr}.cover{min-height:260px}.nav{flex-direction:column;align-items:flex-start;padding:12px 0;gap:10px}}</style>
-</head>
-<body>
-<header class="topbar"><div class="container nav"><a class="brand" href="index.html"><span class="mark">📚</span><span>مملكة الروايات</span></a><div><a class="btn" href="index.html">الرئيسية</a> <a class="btn primary" href="admin-dashboard.html">لوحة التحكم</a></div></div></header>
-<main class="container"><section id="novelHero" class="hero"></section><section id="chapters"></section><section class="panel chapter"><h2>تعليقات الرواية</h2><form class="form" onsubmit="submitComment(event)"><input id="commentName" placeholder="اسمك"><textarea id="commentText" placeholder="اكتب تعليقك" required></textarea><button class="btn primary">نشر التعليق</button></form><div id="comments"></div></section></main>
-<script src="assets/app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/supabase-config.js"></script>
-  <script src="assets/app.js"></script>
-<script>
-const NK=window.NovelsKingdom; const params=new URLSearchParams(location.search); const id=params.get('id')||'1'; const novel=NK.incrementRead(id)||NK.getNovels().find(n=>String(n.id)===String(id));
-function render(){ if(!novel){ novelHero.innerHTML='<div><h1>الرواية غير موجودة</h1><p class="muted">ربما حُذفت أو لم تتم الموافقة عليها بعد.</p><a class="btn primary" href="index.html">عودة للرئيسية</a></div>'; return; } document.title=`${novel.title} | مملكة الروايات`; novelHero.innerHTML=`<div class="cover" style="background-image:url('${NK.escapeHtml(novel.cover)}')"></div><div><span class="tag">${NK.escapeHtml(novel.type)} • ${NK.escapeHtml(novel.status)}</span><h1>${NK.escapeHtml(novel.title)}</h1><p class="muted">✍️ ${NK.escapeHtml(novel.author)} • ${NK.escapeHtml(novel.category)} • 👁️ ${novel.reads.toLocaleString('ar')} قراءة • ⭐ ${novel.rating}</p><p>${NK.escapeHtml(novel.description)}</p></div>`; chapters.innerHTML=novel.chapters.map((ch,i)=>`<article class="panel chapter"><span class="tag">الفصل ${i+1}</span><h2>${NK.escapeHtml(ch.title)}</h2><div class="chapter-body">${NK.escapeHtml(ch.body)}</div></article>`).join(''); renderComments(); const user=NK.currentUser(); if(user){commentName.value=user.name; commentName.disabled=true;} }
-function renderComments(){ const list=NK.getComments().filter(c=>String(c.novelId)===String(novel.id)).slice().reverse(); comments.innerHTML=list.map(c=>`<div class="comment"><strong>${NK.escapeHtml(c.name)}</strong><span class="muted" style="float:left">${new Date(c.date).toLocaleDateString('ar')}</span><p>${NK.escapeHtml(c.text)}</p></div>`).join('')||'<p class="muted">لا توجد تعليقات على هذه الرواية بعد.</p>'; }
-function submitComment(e){ e.preventDefault(); NK.addComment({novelId:novel.id,name:commentName.value,text:commentText.value}); commentText.value=''; renderComments(); }
-render();
-const NK = window.NovelsKingdom;
-const params = new URLSearchParams(location.search);
-const id = params.get('id') || '';
-let novel = null;
-
-function loadNovel() {
-  novel = NK.incrementRead(id) || NK.getNovels().find((item) => String(item.id) === String(id));
-}
-
-function render() {
-  if (!novel) {
-    novelHero.innerHTML = '<div><h1>الرواية غير موجودة</h1><p class="muted">ربما حُذفت أو لم تتم الموافقة عليها بعد.</p><a class="btn primary" href="index.html">عودة للرئيسية</a></div>';
-    chapters.innerHTML = '';
-    return;
-  }
-  document.title = `${novel.title} | مملكة الروايات`;
-  novelHero.innerHTML = `<div class="cover" style="background-image:url('${NK.escapeHtml(novel.cover)}')"></div><div><span class="tag">${NK.escapeHtml(novel.type)} • ${NK.escapeHtml(novel.status)}</span><h1>${NK.escapeHtml(novel.title)}</h1><p class="muted">✍️ ${NK.escapeHtml(novel.author)} • ${NK.escapeHtml(novel.category)} • 👁️ ${novel.reads.toLocaleString('ar')} قراءة • ⭐ ${novel.rating}</p><p>${NK.escapeHtml(novel.description)}</p></div>`;
-  chapters.innerHTML = novel.chapters.map((ch, i) => `<article class="panel chapter"><span class="tag">الفصل ${i + 1}</span><h2>${NK.escapeHtml(ch.title)}</h2><div class="chapter-body">${NK.escapeHtml(ch.body)}</div></article>`).join('');
-  renderComments();
-  const user = NK.currentUser();
-  if (user) {
-    commentName.value = user.name;
-    commentName.disabled = true;
-  }
-}
-
-function renderComments() {
-  if (!novel) return;
-  const list = NK.getComments().filter((comment) => String(comment.novelId) === String(novel.id)).slice().reverse();
-  comments.innerHTML = list.map((comment) => `<div class="comment"><strong>${NK.escapeHtml(comment.name)}</strong><span class="muted" style="float:left">${new Date(comment.date).toLocaleDateString('ar')}</span><p>${NK.escapeHtml(comment.text)}</p></div>`).join('') || '<p class="muted">لا توجد تعليقات على هذه الرواية بعد.</p>';
-}
-
-function submitComment(event) {
-  event.preventDefault();
-  if (!novel) return;
-  try {
-    NK.addComment({ novelId: novel.id, name: commentName.value, text: commentText.value });
-    commentText.value = '';
-    renderComments();
-  } catch (error) {
-    alert(error.message);
-  }
-}
-
-NK.ready.then(() => {
-  loadNovel();
-  render();
-});
-</script>
-</body>
-</html>
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/reader.html b/reader.html
+index 3a05d3c8ce7e7a3cb2098797d9424e3b9b030f34..8533695a34f58fc86d46358b5ea277d789d9c6d7 100644
+--- a/reader.html
++++ b/reader.html
+@@ -1,72 +1,60 @@
+ <!doctype html>
+ <html lang="ar" dir="rtl">
+ <head>
+-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
++  <meta charset="utf-8">
++  <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>قراءة الرواية | مملكة الروايات</title>
+-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
+-  <style>:root{--bg:#0a0f18;--panel:#101828;--card:#152238;--text:#f4f1ea;--muted:#b7bfd1;--accent:#c9a86a;--line:rgba(255,255,255,.09);--radius:20px;--shadow:0 18px 50px rgba(0,0,0,.28);--max:1000px}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top right,rgba(201,168,106,.14),transparent 30%),var(--bg);color:var(--text);font-family:"Cairo",system-ui,sans-serif;line-height:1.95}.container{max-width:var(--max);margin:auto;padding:0 18px}a{text-decoration:none;color:inherit}.muted{color:var(--muted)}.topbar{position:sticky;top:0;z-index:10;background:rgba(10,15,24,.82);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}.nav{min-height:72px;display:flex;align-items:center;justify-content:space-between}.brand{display:flex;gap:10px;align-items:center;font-weight:800}.mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--accent),#f0d9a8);display:grid;place-items:center;color:#111}.btn{padding:11px 16px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);font:inherit;cursor:pointer;display:inline-flex;gap:8px}.btn.primary{background:linear-gradient(135deg,var(--accent),#e2c892);color:#171717;font-weight:800}.hero,.panel{background:linear-gradient(180deg,rgba(21,34,56,.98),rgba(16,24,40,.98));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.hero{display:grid;grid-template-columns:280px 1fr;gap:22px;padding:22px;margin:28px 0}.cover{min-height:360px;border-radius:18px;background:center/cover;border:1px solid var(--line)}h1{font-size:clamp(2rem,4vw,3.3rem);line-height:1.2;margin:10px 0}.tag{display:inline-flex;padding:7px 12px;border-radius:999px;background:rgba(201,168,106,.14);color:#f6e4bf;border:1px solid rgba(201,168,106,.2)}.chapter{padding:30px;margin-bottom:22px}.chapter-body{font-family:"Noto Naskh Arabic",serif;font-size:1.25rem;white-space:pre-wrap}.form{display:grid;gap:12px}.form input,.form textarea{padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--text);font:inherit}.form textarea{min-height:110px}.comment{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.035);margin:10px 0}@media(max-width:760px){.hero{grid-template-columns:1fr}.cover{min-height:260px}.nav{flex-direction:column;align-items:flex-start;padding:12px 0;gap:10px}}</style>
++  <link rel="preconnect" href="https://fonts.googleapis.com">
++  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
++  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Noto+Naskh+Arabic:wght@500;700&display=swap" rel="stylesheet">
++  <style>
++    :root{--bg:#080d16;--panel:#101827;--card:#152239;--text:#fff8ec;--muted:#bac4d6;--accent:#d7ad63;--line:rgba(255,255,255,.1);--radius:24px;--shadow:0 24px 70px rgba(0,0,0,.34);--max:1040px}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,rgba(215,173,99,.17),transparent 30%),var(--bg);color:var(--text);font-family:"Cairo",system-ui,sans-serif;line-height:1.95}.container{max-width:var(--max);margin:auto;padding:0 20px}a{text-decoration:none;color:inherit}.topbar{position:sticky;top:0;z-index:20;background:rgba(8,13,22,.8);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}.nav{min-height:74px;display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{display:flex;align-items:center;gap:12px;font-weight:800}.logo{width:44px;height:44px;border-radius:16px;background:linear-gradient(135deg,var(--accent),#f6dfad);color:#17120a;display:grid;place-items:center}.btn{border:1px solid var(--line);border-radius:15px;padding:11px 16px;background:rgba(255,255,255,.055);color:var(--text);font:inherit;font-weight:800;cursor:pointer;display:inline-flex;gap:8px}.btn.primary{background:linear-gradient(135deg,var(--accent),#efd59a);color:#17120a;border:0}.hero,.panel{background:linear-gradient(180deg,rgba(21,34,57,.96),rgba(13,21,35,.96));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.hero{display:grid;grid-template-columns:300px 1fr;gap:22px;padding:22px;margin:30px 0}.cover{min-height:390px;border-radius:20px;background:center/cover;border:1px solid var(--line)}h1{font-size:clamp(2rem,4.2vw,3.6rem);line-height:1.18;margin:10px 0}.muted{color:var(--muted)}.tag{display:inline-flex;width:fit-content;padding:8px 13px;border-radius:999px;background:rgba(215,173,99,.13);border:1px solid rgba(215,173,99,.25);color:#ffe3ac}.chapter{padding:30px;margin-bottom:22px}.chapter-body{font-family:"Noto Naskh Arabic",serif;font-size:1.28rem;white-space:pre-wrap}.form{display:grid;gap:12px}.form input,.form textarea{padding:13px 14px;border-radius:15px;border:1px solid var(--line);background:rgba(0,0,0,.27);color:var(--text);font:inherit}.form textarea{min-height:110px}.comment{padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.035);margin:10px 0}@media(max-width:760px){.hero{grid-template-columns:1fr}.cover{min-height:280px}.nav{align-items:flex-start;flex-direction:column;padding:12px 0}}
++  </style>
+ </head>
+ <body>
+-<header class="topbar"><div class="container nav"><a class="brand" href="index.html"><span class="mark">📚</span><span>مملكة الروايات</span></a><div><a class="btn" href="index.html">الرئيسية</a> <a class="btn primary" href="admin-dashboard.html">لوحة التحكم</a></div></div></header>
+-<main class="container"><section id="novelHero" class="hero"></section><section id="chapters"></section><section class="panel chapter"><h2>تعليقات الرواية</h2><form class="form" onsubmit="submitComment(event)"><input id="commentName" placeholder="اسمك"><textarea id="commentText" placeholder="اكتب تعليقك" required></textarea><button class="btn primary">نشر التعليق</button></form><div id="comments"></div></section></main>
+-<script src="assets/app.js"></script>
+-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
++  <header class="topbar"><div class="container nav"><a class="brand" href="index.html"><span class="logo">📚</span><span>مملكة الروايات</span></a><div><a class="btn" href="index.html#novels">الروايات</a> <a class="btn primary" href="admin-dashboard.html">لوحة التحكم</a></div></div></header>
++  <main class="container"><section id="novelHero" class="hero"></section><section id="chapters"></section><section class="panel chapter"><h2>تعليقات الرواية</h2><form class="form" onsubmit="submitComment(event)"><input id="commentName" placeholder="اسمك"><textarea id="commentText" placeholder="اكتب تعليقك" required></textarea><button class="btn primary">نشر التعليق</button></form><div id="comments"></div></section></main>
++  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+   <script src="assets/supabase-config.js"></script>
+   <script src="assets/app.js"></script>
+-<script>
+-const NK=window.NovelsKingdom; const params=new URLSearchParams(location.search); const id=params.get('id')||'1'; const novel=NK.incrementRead(id)||NK.getNovels().find(n=>String(n.id)===String(id));
+-function render(){ if(!novel){ novelHero.innerHTML='<div><h1>الرواية غير موجودة</h1><p class="muted">ربما حُذفت أو لم تتم الموافقة عليها بعد.</p><a class="btn primary" href="index.html">عودة للرئيسية</a></div>'; return; } document.title=`${novel.title} | مملكة الروايات`; novelHero.innerHTML=`<div class="cover" style="background-image:url('${NK.escapeHtml(novel.cover)}')"></div><div><span class="tag">${NK.escapeHtml(novel.type)} • ${NK.escapeHtml(novel.status)}</span><h1>${NK.escapeHtml(novel.title)}</h1><p class="muted">✍️ ${NK.escapeHtml(novel.author)} • ${NK.escapeHtml(novel.category)} • 👁️ ${novel.reads.toLocaleString('ar')} قراءة • ⭐ ${novel.rating}</p><p>${NK.escapeHtml(novel.description)}</p></div>`; chapters.innerHTML=novel.chapters.map((ch,i)=>`<article class="panel chapter"><span class="tag">الفصل ${i+1}</span><h2>${NK.escapeHtml(ch.title)}</h2><div class="chapter-body">${NK.escapeHtml(ch.body)}</div></article>`).join(''); renderComments(); const user=NK.currentUser(); if(user){commentName.value=user.name; commentName.disabled=true;} }
+-function renderComments(){ const list=NK.getComments().filter(c=>String(c.novelId)===String(novel.id)).slice().reverse(); comments.innerHTML=list.map(c=>`<div class="comment"><strong>${NK.escapeHtml(c.name)}</strong><span class="muted" style="float:left">${new Date(c.date).toLocaleDateString('ar')}</span><p>${NK.escapeHtml(c.text)}</p></div>`).join('')||'<p class="muted">لا توجد تعليقات على هذه الرواية بعد.</p>'; }
+-function submitComment(e){ e.preventDefault(); NK.addComment({novelId:novel.id,name:commentName.value,text:commentText.value}); commentText.value=''; renderComments(); }
+-render();
+-const NK = window.NovelsKingdom;
+-const params = new URLSearchParams(location.search);
+-const id = params.get('id') || '';
+-let novel = null;
++  <script>
++    const NK = window.NovelsKingdom;
++    const params = new URLSearchParams(location.search);
++    const id = params.get('id');
++    let novel = null;
+ 
+-function loadNovel() {
+-  novel = NK.incrementRead(id) || NK.getNovels().find((item) => String(item.id) === String(id));
+-}
++    function loadNovel() {
++      novel = NK.incrementRead(id) || NK.getNovels().find((item) => String(item.id) === String(id)) || NK.getNovels()[0];
++    }
+ 
+-function render() {
+-  if (!novel) {
+-    novelHero.innerHTML = '<div><h1>الرواية غير موجودة</h1><p class="muted">ربما حُذفت أو لم تتم الموافقة عليها بعد.</p><a class="btn primary" href="index.html">عودة للرئيسية</a></div>';
+-    chapters.innerHTML = '';
+-    return;
+-  }
+-  document.title = `${novel.title} | مملكة الروايات`;
+-  novelHero.innerHTML = `<div class="cover" style="background-image:url('${NK.escapeHtml(novel.cover)}')"></div><div><span class="tag">${NK.escapeHtml(novel.type)} • ${NK.escapeHtml(novel.status)}</span><h1>${NK.escapeHtml(novel.title)}</h1><p class="muted">✍️ ${NK.escapeHtml(novel.author)} • ${NK.escapeHtml(novel.category)} • 👁️ ${novel.reads.toLocaleString('ar')} قراءة • ⭐ ${novel.rating}</p><p>${NK.escapeHtml(novel.description)}</p></div>`;
+-  chapters.innerHTML = novel.chapters.map((ch, i) => `<article class="panel chapter"><span class="tag">الفصل ${i + 1}</span><h2>${NK.escapeHtml(ch.title)}</h2><div class="chapter-body">${NK.escapeHtml(ch.body)}</div></article>`).join('');
+-  renderComments();
+-  const user = NK.currentUser();
+-  if (user) {
+-    commentName.value = user.name;
+-    commentName.disabled = true;
+-  }
+-}
++    function render() {
++      if (!novel) {
++        novelHero.innerHTML = '<div><h1>الرواية غير موجودة</h1><p class="muted">ربما حُذفت أو لم تتم الموافقة عليها بعد.</p><a class="btn primary" href="index.html">عودة للرئيسية</a></div>';
++        chapters.innerHTML = '';
++        return;
++      }
++      document.title = `${novel.title} | مملكة الروايات`;
++      novelHero.innerHTML = `<div class="cover" style="background-image:url('${NK.escapeHtml(novel.cover)}')"></div><div><span class="tag">${NK.escapeHtml(novel.type)} • ${NK.escapeHtml(novel.status)}</span><h1>${NK.escapeHtml(novel.title)}</h1><p class="muted">✍️ ${NK.escapeHtml(novel.author)} • ${NK.escapeHtml(novel.category)} • 👁️ ${novel.reads.toLocaleString('ar')} قراءة • ⭐ ${novel.rating}</p><p>${NK.escapeHtml(novel.description)}</p></div>`;
++      chapters.innerHTML = novel.chapters.map((chapter, index) => `<article class="panel chapter"><span class="tag">الفصل ${index + 1}</span><h2>${NK.escapeHtml(chapter.title)}</h2><div class="chapter-body">${NK.escapeHtml(chapter.body)}</div></article>`).join('');
++      const user = NK.currentUser();
++      if (user) { commentName.value = user.name; commentName.disabled = true; }
++      renderComments();
++    }
+ 
+-function renderComments() {
+-  if (!novel) return;
+-  const list = NK.getComments().filter((comment) => String(comment.novelId) === String(novel.id)).slice().reverse();
+-  comments.innerHTML = list.map((comment) => `<div class="comment"><strong>${NK.escapeHtml(comment.name)}</strong><span class="muted" style="float:left">${new Date(comment.date).toLocaleDateString('ar')}</span><p>${NK.escapeHtml(comment.text)}</p></div>`).join('') || '<p class="muted">لا توجد تعليقات على هذه الرواية بعد.</p>';
+-}
++    function renderComments() {
++      const list = NK.getComments().filter((comment) => novel && String(comment.novelId) === String(novel.id)).slice().reverse();
++      comments.innerHTML = list.map((comment) => `<div class="comment"><strong>${NK.escapeHtml(comment.name)}</strong><span class="muted" style="float:left">${new Date(comment.date).toLocaleDateString('ar')}</span><p>${NK.escapeHtml(comment.text)}</p></div>`).join('') || '<p class="muted">لا توجد تعليقات على هذه الرواية بعد.</p>';
++    }
+ 
+-function submitComment(event) {
+-  event.preventDefault();
+-  if (!novel) return;
+-  try {
+-    NK.addComment({ novelId: novel.id, name: commentName.value, text: commentText.value });
+-    commentText.value = '';
+-    renderComments();
+-  } catch (error) {
+-    alert(error.message);
+-  }
+-}
++    function submitComment(event) {
++      event.preventDefault();
++      if (!novel) return;
++      try { NK.addComment({ novelId: novel.id, name: commentName.value, text: commentText.value }); commentText.value = ''; renderComments(); } catch (error) { alert(error.message); }
++    }
+ 
+-NK.ready.then(() => {
+-  loadNovel();
+-  render();
+-});
+-</script>
++    loadNovel();
++    render();
++    NK.ready.then(() => { loadNovel(); render(); });
++  </script>
+ </body>
+ </html>
+ 
+EOF
+)
