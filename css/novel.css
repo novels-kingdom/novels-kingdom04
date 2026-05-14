@@ -1,13 +1,14 @@
-.novel-hero { padding: 38px 0 18px; display: grid; grid-template-columns: 330px 1fr; gap: 24px; align-items: stretch; }
-.novel-art { min-height: 430px; border-radius: 28px; border: 1px solid var(--line); background: linear-gradient(145deg, rgba(201,168,106,.28), rgba(127,140,255,.22)); display: grid; place-items: center; font-size: 4rem; box-shadow: var(--shadow); }
-.novel-info { padding: clamp(22px, 4vw, 38px); }
+.novel-hero { padding: 42px 0 20px; display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: stretch; }
+.novel-art { min-height: 450px; border-radius: 30px; border: 1px solid var(--line); background: linear-gradient(145deg, rgba(215,181,111,.30), rgba(137,148,255,.22)); display: grid; place-items: center; font-size: 4rem; box-shadow: var(--shadow); overflow: hidden; }
+.novel-art img { width: 100%; height: 100%; object-fit: cover; }
+.novel-info { padding: clamp(24px, 4vw, 42px); }
 .chapter-list { display: grid; gap: 14px; }
-.chapter { border: 1px solid var(--line); border-radius: 18px; padding: 18px; background: rgba(255,255,255,.04); }
-.chapter-body { color: #efe8d9; white-space: pre-wrap; font-size: 1.08rem; }
+.chapter { border: 1px solid var(--line); border-radius: 20px; padding: 20px; background: rgba(255,255,255,.045); }
+.chapter-body { color: #efe8d9; white-space: pre-wrap; font-size: 1.08rem; font-family: "Noto Naskh Arabic", "Cairo", serif; }
 .comments { display: grid; gap: 12px; margin-top: 18px; }
-.comment { padding: 14px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.04); }
-.publish-layout { padding: 36px 0; display: grid; grid-template-columns: .75fr 1.25fr; gap: 20px; align-items: start; }
+.comment { padding: 15px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.045); }
+.publish-layout { padding: 42px 0; display: grid; grid-template-columns: .75fr 1.25fr; gap: 22px; align-items: start; }
 .publish-form { display: grid; gap: 16px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-textarea.form-control { min-height: 150px; resize: vertical; }
-@media (max-width: 850px) { .novel-hero, .publish-layout, .form-row { grid-template-columns: 1fr; } .novel-art { min-height: 300px; } }
+textarea.form-control { min-height: 160px; resize: vertical; }
+@media (max-width: 850px) { .novel-hero, .publish-layout, .form-row { grid-template-columns: 1fr; } .novel-art { min-height: 320px; } }
