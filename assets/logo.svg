@@ -1,0 +1,24 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">شعار مملكة الروايات</title>
+  <desc id="desc">حرف نون عربي ذهبي فوق كتاب مفتوح داخل إطار داكن.</desc>
+  <defs>
+    <linearGradient id="gold" x1="52" y1="31" x2="207" y2="222" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2D99A"/>
+      <stop offset="0.48" stop-color="#C9A86A"/>
+      <stop offset="1" stop-color="#8F6A2B"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="34" y1="20" x2="223" y2="239" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#172234"/>
+      <stop offset="1" stop-color="#0B0F17"/>
+    </linearGradient>
+    <filter id="shadow" x="22" y="22" width="212" height="212" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000" flood-opacity="0.34"/>
+    </filter>
+  </defs>
+  <rect x="24" y="24" width="208" height="208" rx="54" fill="url(#panel)" filter="url(#shadow)"/>
+  <rect x="35" y="35" width="186" height="186" rx="44" stroke="url(#gold)" stroke-opacity="0.75" stroke-width="5"/>
+  <path d="M69 155C88 143 106 143 128 158C150 143 168 143 187 155V178C168 166 150 166 128 181C106 166 88 166 69 178V155Z" fill="#F4E8CA" opacity="0.92"/>
+  <path d="M75 111C94 99 111 100 128 114C145 100 162 99 181 111V152C162 140 145 141 128 154C111 141 94 140 75 152V111Z" stroke="url(#gold)" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M128 83C146 83 159 96 159 114C159 126 153 137 144 143" stroke="url(#gold)" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="101" cy="89" r="8" fill="#F2D99A"/>
+</svg>
