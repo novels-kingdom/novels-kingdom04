@@ -180,7 +180,11 @@ drop policy if exists "anyone creates comments" on public.comments;
 create policy "anyone creates comments"
 on public.comments for insert
 to anon, authenticated
-with check (approved = true and char_length(text) between 1 and 1000);
+with check (
+  char_length(name) between 1 and 80
+  and char_length(text) between 1 and 1000
+  and (approved = false or public.is_admin())
+);
 
 drop policy if exists "admins manage comments" on public.comments;
 create policy "admins manage comments"
