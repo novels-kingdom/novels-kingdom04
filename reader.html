@@ -10,12 +10,63 @@
 <header class="topbar"><div class="container nav"><a class="brand" href="index.html"><span class="mark">📚</span><span>مملكة الروايات</span></a><div><a class="btn" href="index.html">الرئيسية</a> <a class="btn primary" href="admin-dashboard.html">لوحة التحكم</a></div></div></header>
 <main class="container"><section id="novelHero" class="hero"></section><section id="chapters"></section><section class="panel chapter"><h2>تعليقات الرواية</h2><form class="form" onsubmit="submitComment(event)"><input id="commentName" placeholder="اسمك"><textarea id="commentText" placeholder="اكتب تعليقك" required></textarea><button class="btn primary">نشر التعليق</button></form><div id="comments"></div></section></main>
 <script src="assets/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/supabase-config.js"></script>
+  <script src="assets/app.js"></script>
 <script>
 const NK=window.NovelsKingdom; const params=new URLSearchParams(location.search); const id=params.get('id')||'1'; const novel=NK.incrementRead(id)||NK.getNovels().find(n=>String(n.id)===String(id));
 function render(){ if(!novel){ novelHero.innerHTML='<div><h1>الرواية غير موجودة</h1><p class="muted">ربما حُذفت أو لم تتم الموافقة عليها بعد.</p><a class="btn primary" href="index.html">عودة للرئيسية</a></div>'; return; } document.title=`${novel.title} | مملكة الروايات`; novelHero.innerHTML=`<div class="cover" style="background-image:url('${NK.escapeHtml(novel.cover)}')"></div><div><span class="tag">${NK.escapeHtml(novel.type)} • ${NK.escapeHtml(novel.status)}</span><h1>${NK.escapeHtml(novel.title)}</h1><p class="muted">✍️ ${NK.escapeHtml(novel.author)} • ${NK.escapeHtml(novel.category)} • 👁️ ${novel.reads.toLocaleString('ar')} قراءة • ⭐ ${novel.rating}</p><p>${NK.escapeHtml(novel.description)}</p></div>`; chapters.innerHTML=novel.chapters.map((ch,i)=>`<article class="panel chapter"><span class="tag">الفصل ${i+1}</span><h2>${NK.escapeHtml(ch.title)}</h2><div class="chapter-body">${NK.escapeHtml(ch.body)}</div></article>`).join(''); renderComments(); const user=NK.currentUser(); if(user){commentName.value=user.name; commentName.disabled=true;} }
 function renderComments(){ const list=NK.getComments().filter(c=>String(c.novelId)===String(novel.id)).slice().reverse(); comments.innerHTML=list.map(c=>`<div class="comment"><strong>${NK.escapeHtml(c.name)}</strong><span class="muted" style="float:left">${new Date(c.date).toLocaleDateString('ar')}</span><p>${NK.escapeHtml(c.text)}</p></div>`).join('')||'<p class="muted">لا توجد تعليقات على هذه الرواية بعد.</p>'; }
 function submitComment(e){ e.preventDefault(); NK.addComment({novelId:novel.id,name:commentName.value,text:commentText.value}); commentText.value=''; renderComments(); }
 render();
+const NK = window.NovelsKingdom;
+const params = new URLSearchParams(location.search);
+const id = params.get('id') || '';
+let novel = null;
+
+function loadNovel() {
+  novel = NK.incrementRead(id) || NK.getNovels().find((item) => String(item.id) === String(id));
+}
+
+function render() {
+  if (!novel) {
+    novelHero.innerHTML = '<div><h1>الرواية غير موجودة</h1><p class="muted">ربما حُذفت أو لم تتم الموافقة عليها بعد.</p><a class="btn primary" href="index.html">عودة للرئيسية</a></div>';
+    chapters.innerHTML = '';
+    return;
+  }
+  document.title = `${novel.title} | مملكة الروايات`;
+  novelHero.innerHTML = `<div class="cover" style="background-image:url('${NK.escapeHtml(novel.cover)}')"></div><div><span class="tag">${NK.escapeHtml(novel.type)} • ${NK.escapeHtml(novel.status)}</span><h1>${NK.escapeHtml(novel.title)}</h1><p class="muted">✍️ ${NK.escapeHtml(novel.author)} • ${NK.escapeHtml(novel.category)} • 👁️ ${novel.reads.toLocaleString('ar')} قراءة • ⭐ ${novel.rating}</p><p>${NK.escapeHtml(novel.description)}</p></div>`;
+  chapters.innerHTML = novel.chapters.map((ch, i) => `<article class="panel chapter"><span class="tag">الفصل ${i + 1}</span><h2>${NK.escapeHtml(ch.title)}</h2><div class="chapter-body">${NK.escapeHtml(ch.body)}</div></article>`).join('');
+  renderComments();
+  const user = NK.currentUser();
+  if (user) {
+    commentName.value = user.name;
+    commentName.disabled = true;
+  }
+}
+
+function renderComments() {
+  if (!novel) return;
+  const list = NK.getComments().filter((comment) => String(comment.novelId) === String(novel.id)).slice().reverse();
+  comments.innerHTML = list.map((comment) => `<div class="comment"><strong>${NK.escapeHtml(comment.name)}</strong><span class="muted" style="float:left">${new Date(comment.date).toLocaleDateString('ar')}</span><p>${NK.escapeHtml(comment.text)}</p></div>`).join('') || '<p class="muted">لا توجد تعليقات على هذه الرواية بعد.</p>';
+}
+
+function submitComment(event) {
+  event.preventDefault();
+  if (!novel) return;
+  try {
+    NK.addComment({ novelId: novel.id, name: commentName.value, text: commentText.value });
+    commentText.value = '';
+    renderComments();
+  } catch (error) {
+    alert(error.message);
+  }
+}
+
+NK.ready.then(() => {
+  loadNovel();
+  render();
+});
 </script>
 </body>
 </html>
