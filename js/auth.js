@@ -1,3 +1,4 @@
+function handleRegister(event) {
 function setButtonLoading(button, isLoading, label) {
   if (!button) return;
   button.disabled = isLoading;
@@ -11,6 +12,15 @@ function setButtonLoading(button, isLoading, label) {
 
 async function handleRegister(event) {
   event.preventDefault();
+  const form = new FormData(event.currentTarget);
+  const users = NK.getUsers();
+  const email = String(form.get('email')).trim().toLowerCase();
+  if (users.some((user) => user.email === email)) return NK.showToast('هذا البريد مسجل بالفعل.', 'error');
+  const user = { id: crypto.randomUUID(), name: form.get('name').trim(), email, password: form.get('password'), role: form.get('role') };
+  users.push(user);
+  NK.saveUsers(users);
+  NK.setSession(user);
+  location.href = 'dashboard.html';
   const formElement = event.currentTarget;
   const button = formElement.querySelector('button[type="submit"]');
   const form = new FormData(formElement);
@@ -32,8 +42,16 @@ async function handleRegister(event) {
   }
 }
 
+function handleLogin(event) {
 async function handleLogin(event) {
   event.preventDefault();
+  const form = new FormData(event.currentTarget);
+  const email = String(form.get('email')).trim().toLowerCase();
+  const password = String(form.get('password'));
+  const user = NK.getUsers().find((item) => item.email === email && item.password === password);
+  if (!user) return NK.showToast('بيانات الدخول غير صحيحة.', 'error');
+  NK.setSession(user);
+  location.href = 'dashboard.html';
   const formElement = event.currentTarget;
   const button = formElement.querySelector('button[type="submit"]');
   const form = new FormData(formElement);
