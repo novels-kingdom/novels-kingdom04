@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>مملكة الروايات | روايات أدباء شبان ومترجمات ونقاشات أدبية</title>
+  <meta name="description" content="منصة عربية أنيقة لنشر الروايات العربية والمترجمة، ومناقشة الأعمال العالمية والقصص الجديدة." />
+  <title>مملكة الروايات | منصة نشر وقراءة الروايات</title>
+  <meta name="description" content="منصة عربية جاهزة لنشر الروايات، تسجيل القراء والكتّاب، قراءة الفصول، والتعليقات الأدبية." />
+  <title>مملكة الروايات | منصة قراءة ونشر عربية</title>
+  <meta name="description" content="منصة عربية أنيقة لاكتشاف الروايات ونشر الفصول وبناء مجتمع للقراء والكتّاب.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root{
+      --bg:#0a0f18;
+      --panel:#101828;
+      --card:#152238;
+      --text:#f4f1ea;
+      --muted:#b7bfd1;
+      --accent:#c9a86a;
+      --accent2:#7f8cff;
+      --line:rgba(255,255,255,.08);
+      --radius:20px;
+      --shadow:0 18px 50px rgba(0,0,0,.28);
+      --max:1200px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:
+        radial-gradient(circle at top right, rgba(201,168,106,.12), transparent 28%),
+        radial-gradient(circle at top left, rgba(127,140,255,.10), transparent 24%),
+        var(--bg);
+      color:var(--text);
+      font-family:"Cairo",system-ui,sans-serif;
+      line-height:1.9;
+    }
+    a{text-decoration:none;color:inherit}
+    .container{max-width:var(--max);margin:auto;padding:0 18px}
+    
+    /* Topbar */
+    .topbar{
+      position:sticky;top:0;z-index:20;
+      backdrop-filter:blur(18px);
+      background:rgba(10,15,24,.76);
+      border-bottom:1px solid var(--line);
+    }
+    .nav{
+      min-height:74px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+    }
+    .brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.2px;cursor:pointer}
+    .brand .mark{
+      width:42px;height:42px;border-radius:14px;
+      background:linear-gradient(135deg,var(--accent),#f0d9a8);
+      box-shadow:var(--shadow);
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.5rem;
+    }
+    .menu{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .menu a{
+      color:var(--muted);padding:9px 13px;border-radius:999px;
+      border:1px solid transparent;background:transparent;
+      transition:all .2s;cursor:pointer;
+    }
+    .menu a:hover{border-color:var(--line);background:rgba(255,255,255,.04);color:var(--text)}
+    .menu .premium-btn{
+      background:linear-gradient(135deg,#7f8cff,#a5b1ff);
+      color:#fff;font-weight:700;
+      animation:pulse 2s infinite;
+    }
+    @keyframes pulse{
+      0%,100%{box-shadow:0 0 0 0 rgba(127,140,255,.4)}
+      50%{box-shadow:0 0 0 8px rgba(127,140,255,0)}
+    }
+    .menu .admin-btn{
+      background:linear-gradient(135deg,var(--accent),#e2c892);
+      color:#000;font-weight:700;
+    }
+    
+    /* Hero */
+    .hero{
+      padding:38px 0 24px;
+      display:grid;grid-template-columns:1.35fr .75fr;gap:22px;
+    }
+    .hero-main,.hero-side,.panel,.card,.post{
+      background:linear-gradient(180deg, rgba(21,34,56,.98), rgba(16,24,40,.98));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .hero-main{padding:36px;min-height:420px;display:flex;flex-direction:column;justify-content:flex-end;
+      background:
+        linear-gradient(180deg, rgba(10,15,24,.15), rgba(10,15,24,.92)),
+        url('https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=1400&q=80') center/cover;
+    }
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      width:fit-content;padding:8px 13px;border-radius:999px;
+      background:rgba(201,168,106,.14);color:#f6e4bf;
+      border:1px solid rgba(201,168,106,.2);
+      font-size:.92rem
+    }
+    h1{
+      margin:14px 0 12px;
+      font-size:clamp(2rem,4.8vw,4rem);
+      line-height:1.12
+    }
+    .lead{max-width:60ch;color:var(--muted);font-family:"Noto Naskh Arabic",serif;font-size:1.12rem}
+    .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+    .btn{
+      padding:12px 18px;border-radius:14px;font-weight:700;
+      border:1px solid var(--line);display:inline-flex;align-items:center;gap:8px;
+      cursor:pointer;transition:all .2s;
+    }
+    .btn.primary{background:linear-gradient(135deg,var(--accent),#e2c892);color:#171717}
+    .btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(201,168,106,.3)}
+    .btn.secondary{background:rgba(255,255,255,.04)}
+    .btn.secondary:hover{background:rgba(255,255,255,.08)}
+    
+    .hero-side{padding:18px;display:grid;gap:14px;align-content:start}
+    .mini{
+      padding:16px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--line)
+    }
+    .mini strong{display:block;font-size:1.2rem;margin-bottom:4px}
+    
+    /* Layout */
+    .layout{
+      display:grid;grid-template-columns:1.25fr .75fr;gap:22px;padding:18px 0 48px
+    }
+    .section{margin-bottom:22px}
+    .head{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px
+    }
+    .head h2{margin:0;font-size:1.35rem}
+    .head span{color:var(--muted);font-size:.95rem}
+    
+    /* Featured Novel */
+    .featured{
+      display:grid;grid-template-columns:.9fr 1.1fr;gap:18px
+    }
+    .cover{
+      min-height:280px;border-radius:18px;
+      background:
+        linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.58)),
+        url('https://images.unsplash.com/photo-1535223289827-42f1e9919769?auto=format&fit=crop&w=1200&q=80') center/cover;
+      border:1px solid var(--line);
+      position:relative;
+      overflow:hidden;
+    }
+    .cover img{
+      width:100%;height:100%;object-fit:cover;
+    }
+    
+    .card,.post,.panel{padding:18px}
+    .tag{
+      display:inline-block;padding:6px 10px;border-radius:999px;
+      background:rgba(127,140,255,.12);color:#d9ddff;
+      border:1px solid rgba(127,140,255,.18);font-size:.84rem;
+      margin-bottom:8px;
+    }
+    .tag.premium{
+      background:linear-gradient(135deg,#c9a86a,#f0d9a8);
+      color:#171717;border:none;font-weight:700
+    }
+    .muted{color:var(--muted)}
+    
+    /* Grid */
+    .grid{
+      display:grid;grid-template-columns:repeat(2,1fr);gap:18px
+    }
+    .post{transition:all .2s;cursor:pointer}
+    .post:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.4)}
+    .post h3{margin:8px 0 8px;font-size:1.1rem}
+    .post img{
+      width:100%;height:160px;object-fit:cover;
+      border-radius:12px;margin-bottom:12px;
+    }
+    
+    /* Sidebar */
+    .list{display:grid;gap:10px}
+    .list a{
+      padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);
+      border:1px solid var(--line);transition:all .2s;
+    }
+    .list a:hover{
+      background:rgba(255,255,255,.08);
+      border-color:var(--accent);
+      transform:translateX(-4px);
+    }
+    
+    /* Premium Box */
+    .premium-box{
+      background:linear-gradient(135deg, rgba(127,140,255,.15), rgba(201,168,106,.15));
+      border:2px solid var(--accent);
+      padding:24px;border-radius:var(--radius);
+      text-align:center;margin-bottom:22px;
+    }
+    .premium-box h3{margin:0 0 8px;color:var(--accent)}
+    .premium-box ul{
+      list-style:none;padding:0;margin:12px 0;
+      text-align:right
+    }
+    .premium-box li{
+      padding:8px 0;
+      border-bottom:1px solid var(--line)
+    }
+    .premium-box li:before{content:"✓ ";color:var(--accent);font-weight:bold;margin-left:8px}
+    
+    /* Comment Form */
+    .comment{
+      padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.04)
+    }
+    input,textarea{
+      width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);
+      background:#0d1524;color:var(--text);font:inherit
+    }
+    textarea{min-height:120px;resize:vertical}
+    .form{display:grid;gap:12px}
+    
+    /* Footer */
+    .footer{
+      border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);text-align:center
+    }
+    .footer-links{display:flex;gap:20px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+    .footer-links a{color:var(--accent);transition:color .2s}
+    .footer-links a:hover{color:var(--text)}
+    
+    /* Loading */
+    .loading{
+      text-align:center;padding:40px;color:var(--muted);
+    }
+    .spinner{
+      width:40px;height:40px;
+      border:4px solid var(--line);
+      border-top-color:var(--accent);
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+      margin:20px auto;
+    }
+    @keyframes spin{
+      to{transform:rotate(360deg)}
+    }
+    
+    /* Responsive */
+    @media (max-width: 960px){
+      .hero,.layout,.featured,.grid{grid-template-columns:1fr}
+      .menu{display:none}
+      .hero-main{min-height:360px}
+    }
+    :root{--bg:#0a0f18;--panel:#101828;--card:#152238;--text:#f4f1ea;--muted:#b7bfd1;--accent:#c9a86a;--accent2:#7f8cff;--success:#10b981;--danger:#ef4444;--line:rgba(255,255,255,.09);--radius:20px;--shadow:0 18px 50px rgba(0,0,0,.28);--max:1200px}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at top right,rgba(201,168,106,.14),transparent 30%),radial-gradient(circle at top left,rgba(127,140,255,.12),transparent 26%),var(--bg);color:var(--text);font-family:"Cairo",system-ui,sans-serif;line-height:1.9} a{text-decoration:none;color:inherit}.container{max-width:var(--max);margin:auto;padding:0 18px}.muted{color:var(--muted)}
+    .topbar{position:sticky;top:0;z-index:30;backdrop-filter:blur(18px);background:rgba(10,15,24,.82);border-bottom:1px solid var(--line)}.nav{min-height:74px;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;align-items:center;gap:12px;font-weight:800}.mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--accent),#f0d9a8);display:grid;place-items:center;color:#171717}.menu,.auth-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.menu a,.nav button{color:var(--muted);padding:9px 13px;border-radius:999px;border:1px solid transparent;background:transparent;font:inherit;cursor:pointer}.menu a:hover,.nav button:hover{border-color:var(--line);background:rgba(255,255,255,.05);color:var(--text)}
+    .btn{padding:12px 18px;border-radius:14px;font-weight:700;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:.2s;font:inherit}.btn.primary{background:linear-gradient(135deg,var(--accent),#e2c892);color:#171717}.btn.secondary{background:rgba(255,255,255,.05);color:var(--text)}.btn.success{background:var(--success);color:white}.btn.danger{background:var(--danger);color:white}.btn:hover{transform:translateY(-1px)}
+    .hero{padding:38px 0 24px;display:grid;grid-template-columns:1.25fr .75fr;gap:22px}.hero-main,.hero-side,.panel,.card,.post,.comment{background:linear-gradient(180deg,rgba(21,34,56,.98),rgba(16,24,40,.98));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.hero-main{padding:36px;min-height:430px;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(180deg,rgba(10,15,24,.12),rgba(10,15,24,.94)),url('https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=1400&q=80') center/cover}.pill,.tag{display:inline-flex;align-items:center;gap:8px;width:fit-content;padding:7px 12px;border-radius:999px;background:rgba(201,168,106,.14);color:#f6e4bf;border:1px solid rgba(201,168,106,.2);font-size:.9rem}h1{margin:14px 0 12px;font-size:clamp(2rem,4.8vw,4rem);line-height:1.12}.lead{max-width:66ch;color:var(--muted);font-family:"Noto Naskh Arabic",serif;font-size:1.14rem}.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}.hero-side{padding:18px;display:grid;gap:14px;align-content:start}.mini{padding:16px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--line)}.mini strong{display:block;font-size:1.2rem}.layout{display:grid;grid-template-columns:1.25fr .75fr;gap:22px;padding:18px 0 48px}.section{margin-bottom:22px}.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.head h2{margin:0;font-size:1.35rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.featured{display:grid;grid-template-columns:.9fr 1.1fr;gap:18px}.cover{min-height:300px;border-radius:18px;background:center/cover;border:1px solid var(--line)}.card,.post,.panel,.comment{padding:18px}.post{cursor:pointer}.post img{width:100%;height:230px;object-fit:cover;border-radius:16px;border:1px solid var(--line)}.post h3{margin:10px 0 6px}.list{display:grid;gap:10px}.list a{padding:12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line)}.premium-box{padding:22px;border-radius:var(--radius);background:linear-gradient(135deg,rgba(127,140,255,.22),rgba(201,168,106,.14));border:1px solid var(--line);box-shadow:var(--shadow);margin-bottom:22px}.form{display:grid;gap:12px}.form input,.form textarea,.form select{width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--text);font:inherit}.form textarea{min-height:130px;resize:vertical}.status{padding:10px 14px;border-radius:14px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);color:#bbf7d0;display:none}.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:16px}.footer{border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);text-align:center}.footer-links{display:flex;gap:20px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}.footer-links a{color:var(--accent)}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}.modal.open{display:flex}.modal-box{width:min(720px,100%);max-height:92vh;overflow:auto;background:linear-gradient(180deg,#152238,#101828);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:24px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.close{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:8px 12px;cursor:pointer}.tabs{display:flex;gap:8px;margin-bottom:16px}.tab{flex:1}.tab.active{background:linear-gradient(135deg,var(--accent),#e2c892);color:#171717}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:960px){.hero,.layout,.featured,.two{grid-template-columns:1fr}.menu{display:none}.hero-main{min-height:360px}.auth-actions{justify-content:flex-end}.nav{align-items:flex-start;flex-direction:column;padding:12px 0}}
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container nav">
+      <a class="brand" onclick="location.reload()">
+        <span class="mark">📚</span>
+        <span id="siteName">مملكة الروايات</span>
+      </a>
+      <nav class="menu">
+        <a href="#novels">الروايات</a>
+        <a href="#translated">المترجمة</a>
+        <a href="#discussion">النقاش</a>
+        <a href="#premium" class="premium-btn">⭐ اشترك الآن</a>
+        <a href="admin-dashboard.html" class="admin-btn">👑 لوحة التحكم</a>
+      </nav>
+    </div>
+  </header>
+
+  <header class="topbar"><div class="container nav"><a class="brand" href="index.html"><span class="mark">📚</span><span id="siteName">مملكة الروايات</span></a><nav class="menu"><a href="#novels">الروايات</a><a href="#publish">انشر روايتك</a><a href="#discussion">النقاش</a><a href="#premium">الاشتراك</a><a href="admin-dashboard.html">👑 لوحة التحكم</a></nav><div class="auth-actions" id="authActions"></div></div></header>
+  <main class="container">
+    <section class="hero">
+      <div class="hero-main">
+        <span class="pill">منصة أدبية عربية مميزة</span>
+        <h1>مكان راقٍ لقراءة الروايات العربية والمترجمة ومناقشة الأعمال العالمية</h1>
+        <p class="lead">
+          نصنع مساحة تجمع بين النشر الجميل، القراءة الهادئة، والنقاش العميق حول الروايات الجديدة والكلاسيكية.
+        </p>
+        <div class="cta">
+          <a class="btn primary" href="#novels">استكشف الروايات</a>
+          <a class="btn secondary" href="#premium">اشترك مجانًا</a>
+  <div id="app-header"></div>
+  <main>
+    <section class="container hero">
+      <div class="hero-copy">
+        <span class="eyebrow">منصة عربية للخيال والقراءة</span>
+        <h1>اكتشف روايتك القادمة وانشر عالمك الخاص.</h1>
+        <p class="lead">مملكة الروايات تجمع القراء والكتّاب في مساحة واحدة لقراءة الأعمال العربية والمترجمة، متابعة الفصول، والتفاعل مع القصص الملهمة.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#novels">ابدأ القراءة</a>
+          <a class="btn btn-secondary" href="publish.html">انشر روايتك</a>
+        </div>
+      </div>
+
+      <aside class="hero-side">
+        <div class="mini">
+          <strong>🎯 روايات عربية</strong>
+          <span class="muted">أعمال شبان، فصول متسلسلة، وروايات مكتملة.</span>
+        </div>
+        <div class="mini">
+          <strong>🌍 روايات مترجمة</strong>
+          <span class="muted">اختيارات عالمية بصياغة عربية سهلة وجذابة.</span>
+        </div>
+        <div class="mini">
+          <strong>💬 نقاشات أدبية</strong>
+          <span class="muted">مساحة للآراء، الترشيحات، والتحليل.</span>
+        </div>
+      <aside class="hero-card">
+        <span class="number">+3</span>
+        <h2>روايات مختارة للانطلاق</h2>
+        <p class="muted">جرّب المنصة ببيانات محلية قابلة للتعديل، ثم أضف أعمالك من صفحة النشر.</p>
+      </aside>
+    </section>
+
+    <section class="layout">
+      <div>
+        <div class="section" id="novels">
+          <div class="head">
+            <h2>الرواية المميزة</h2>
+            <span id="featuredCount">جاري التحميل...</span>
+          </div>
+          <div id="featuredNovel" class="loading">
+            <div class="spinner"></div>
+            <p>جاري تحميل الروايات...</p>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="head">
+            <h2>أحدث الإضافات</h2>
+            <span>الروايات والفصول الجديدة</span>
+          </div>
+          <div id="latestNovels" class="grid">
+            <div class="loading">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comment" id="discussion">
+          <div class="head">
+            <h2>النقاش الأدبي</h2>
+            <span>تعليقات القراء وآراؤهم</span>
+          </div>
+          <form class="form" onsubmit="submitComment(event)">
+            <input type="text" id="commentName" placeholder="اسمك" required>
+            <textarea id="commentText" placeholder="اكتب رأيك في رواية أو سؤالًا للنقاش..." required></textarea>
+            <button type="submit" class="btn primary">نشر النقاش</button>
+          </form>
+          
+          <div id="commentsList" style="margin-top:24px">
+            <!-- Comments will appear here -->
+          </div>
+    <section class="container section" id="novels">
+      <div class="section-head">
+        <div>
+          <h2>أحدث الروايات</h2>
+          <p class="muted">ابحث بالعنوان أو الكاتب، وصفِّ الأعمال حسب التصنيف.</p>
+        </div>
+        <div class="filters">
+          <input class="search-input" id="searchInput" type="search" placeholder="ابحث عن رواية...">
+          <select class="select" id="categoryFilter" aria-label="تصفية التصنيف">
+            <option value="all">كل التصنيفات</option>
+            <option value="غموض">غموض</option>
+            <option value="فانتازيا">فانتازيا</option>
+            <option value="رومانسي">رومانسي</option>
+            <option value="مغامرة">مغامرة</option>
+          </select>
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <div class="premium-box" id="premium">
+          <h3>⭐ الاشتراك المميز</h3>
+          <p class="muted">انضم لنا بـ 5$ شهريًا واحصل على:</p>
+          <ul>
+            <li>فصول مبكرة قبل الجميع</li>
+            <li>محتوى حصري غير منشور</li>
+            <li>بدون إعلانات</li>
+            <li>تحميل الروايات PDF</li>
+            <li>دعم الكتّاب مباشرة</li>
+          </ul>
+          <a class="btn primary" href="https://patreon.com/yourpage" target="_blank">
+            اشترك عبر Patreon
+          </a>
+        </div>
+
+        <div class="panel" id="translated">
+          <h2>الأقسام</h2>
+          <div class="list">
+            <a href="#" onclick="filterNovels('all')">📚 جميع الروايات</a>
+            <a href="#" onclick="filterNovels('عربية')">🇸🇦 روايات عربية</a>
+            <a href="#" onclick="filterNovels('مترجمة')">🌍 روايات مترجمة</a>
+            <a href="#" onclick="filterNovels('مكتملة')">✅ روايات مكتملة</a>
+            <a href="#" onclick="filterNovels('قيد النشر')">📝 روايات قيد النشر</a>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>الأكثر قراءة</h2>
+          <div id="topNovels" class="list">
+            <div class="loading" style="text-align:center;padding:20px">
+              <div class="spinner" style="width:30px;height:30px"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>عن المنصة</h2>
+          <p class="muted">
+            موقع عربي مخصص للمحتوى الروائي، يدمج القراءة الراقية مع مجتمع نقاش نشط ومحتوى قابل للنمو والربح.
+          </p>
+        </div>
+      </aside>
+      <div class="novels-grid" id="novelsGrid"></div>
+    </section>
+    <section class="hero"><div class="hero-main"><span class="pill">منصة أدبية عربية جاهزة</span><h1>اقرأ، انشر، وتابع رواياتك من حساب واحد</h1><p class="lead" id="siteDescription">منصة عربية احترافية لنشر الروايات وقراءتها وإدارة مجتمع القراء والكتّاب.</p><div class="cta"><a class="btn primary" href="#novels">استكشف الروايات</a><button class="btn secondary" onclick="openPublish()">✍️ انشر روايتك</button></div></div><aside class="hero-side"><div class="mini"><strong>👤 حسابات للزوار</strong><span class="muted">تسجيل دخول وتسجيل جديد للقراء والكتّاب.</span></div><div class="mini"><strong>✍️ نشر الروايات</strong><span class="muted">نموذج نشر كامل مع فصول وغلاف وتصنيف.</span></div><div class="mini"><strong>🛠️ إدارة فعلية</strong><span class="muted">لوحة تحكم للتعديل والحذف والموافقة والإحصائيات.</span></div></aside></section>
+    <section class="layout"><div><section class="section" id="novels"><div class="head"><h2>الرواية المميزة</h2><span id="featuredCount" class="muted">...</span></div><div id="featuredNovel"></div></section><section class="section"><div class="head"><h2>أحدث الإضافات</h2><span class="muted">الروايات والفصول الجديدة</span></div><div id="latestNovels" class="grid"></div></section><section class="comment" id="discussion"><div class="head"><h2>النقاش الأدبي</h2><span class="muted">تعليقات القراء وآراؤهم</span></div><form class="form" onsubmit="submitComment(event)"><input type="text" id="commentName" placeholder="اسمك"><textarea id="commentText" placeholder="اكتب رأيك في رواية أو سؤالًا للنقاش..." required></textarea><button type="submit" class="btn primary">نشر النقاش</button></form><div id="commentsList" style="margin-top:24px"></div></section></div><aside class="sidebar"><div class="premium-box" id="premium"><h3>⭐ الاشتراك المميز</h3><p class="muted">اعرض مزايا الاشتراك أو اربطه بخدمة دفع خارجية.</p><ul><li>فصول مبكرة قبل الجميع</li><li>محتوى حصري</li><li>تحميل PDF</li><li>دعم الكتّاب مباشرة</li></ul><a class="btn primary" id="patreonLink" target="_blank" rel="noopener">اشترك الآن</a></div><div class="panel" id="publish"><h2>ابدأ النشر</h2><p class="muted">سجّل ككاتب ثم أرسل روايتك للمراجعة من لوحة التحكم.</p><button class="btn primary" onclick="openPublish()">➕ نشر رواية جديدة</button></div><div class="panel"><h2>الأقسام</h2><div class="list"><a href="#" onclick="filterNovels('all')">📚 جميع الروايات</a><a href="#" onclick="filterNovels('عربية')">🇸🇦 روايات عربية</a><a href="#" onclick="filterNovels('مترجمة')">🌍 روايات مترجمة</a><a href="#" onclick="filterNovels('مكتملة')">✅ روايات مكتملة</a><a href="#" onclick="filterNovels('قيد النشر')">📝 قيد النشر</a></div></div><div class="panel"><h2>الأكثر قراءة</h2><div id="topNovels" class="list"></div></div></aside></section>
+  </main>
+  <footer class="footer"><div class="footer-links"><a href="privacy-policy.html">سياسة الخصوصية</a><a href="terms-of-service.html">الشروط والأحكام</a><a href="mailto:admin@site.com">تواصل معنا</a><a href="admin-dashboard.html">لوحة التحكم</a></div><p>© 2026 مملكة الروايات — جميع الحقوق محفوظة</p></footer>
+
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="privacy-policy.html">سياسة الخصوصية</a>
+      <a href="terms-of-service.html">الشروط والأحكام</a>
+      <a href="#contact">تواصل معنا</a>
+      <a href="#advertise">أعلن معنا</a>
+    </div>
+    <p>© 2026 مملكة الروايات — جميع الحقوق محفوظة</p>
+  </footer>
+
+  <div class="modal" id="authModal"><div class="modal-box"><div class="modal-head"><h2>حساب الزائر</h2><button class="close" onclick="closeModal('authModal')">✕</button></div><div class="tabs"><button id="loginTab" class="btn tab active" onclick="switchAuth('login')">تسجيل الدخول</button><button id="registerTab" class="btn tab" onclick="switchAuth('register')">تسجيل جديد</button></div><form class="form" id="loginForm" onsubmit="doLogin(event)"><input id="loginEmail" type="email" placeholder="البريد الإلكتروني" required><input id="loginPassword" type="password" placeholder="كلمة المرور" required><button class="btn primary">دخول</button><p class="muted">للتجربة: admin@site.com / admin123 أو author@site.com / author123</p></form><form class="form" id="registerForm" onsubmit="doRegister(event)" style="display:none"><div class="two"><input id="registerName" placeholder="الاسم" required><input id="registerEmail" type="email" placeholder="البريد الإلكتروني" required></div><div class="two"><input id="registerPassword" type="password" minlength="6" placeholder="كلمة المرور" required><select id="registerRole"><option value="author">كاتب/ناشر</option><option value="reader">قارئ</option></select></div><button class="btn primary">إنشاء الحساب</button></form></div></div>
+  <div class="modal" id="authModal"><div class="modal-box"><div class="modal-head"><h2>حساب الزائر</h2><button class="close" onclick="closeModal('authModal')">✕</button></div><div class="tabs"><button id="loginTab" class="btn tab active" onclick="switchAuth('login')">تسجيل الدخول</button><button id="registerTab" class="btn tab" onclick="switchAuth('register')">تسجيل جديد</button></div><form class="form" id="loginForm" onsubmit="doLogin(event)"><input id="loginEmail" type="email" placeholder="البريد الإلكتروني" required><input id="loginPassword" type="password" placeholder="كلمة المرور" required><button class="btn primary">دخول</button><p class="muted">يتم إنشاء الحساب عبر Supabase Auth. يمكن ترقية دور المدير من جدول profiles.</p></form><form class="form" id="registerForm" onsubmit="doRegister(event)" style="display:none"><div class="two"><input id="registerName" placeholder="الاسم" required><input id="registerEmail" type="email" placeholder="البريد الإلكتروني" required></div><div class="two"><input id="registerPassword" type="password" minlength="8" placeholder="كلمة المرور" required><select id="registerRole"><option value="author">كاتب/ناشر</option><option value="reader">قارئ</option></select></div><button class="btn primary">إنشاء الحساب</button></form></div></div>
+  <div class="modal" id="publishModal"><div class="modal-box"><div class="modal-head"><h2>نشر رواية</h2><button class="close" onclick="closeModal('publishModal')">✕</button></div><div class="status" id="publishStatus"></div><form class="form" onsubmit="submitNovel(event)"><div class="two"><input id="novelTitle" placeholder="عنوان الرواية" required><input id="novelCategory" placeholder="الفئة: غموض، رومانسي..." required></div><div class="two"><select id="novelType"><option>عربية</option><option>مترجمة</option></select><select id="novelStatus"><option>قيد النشر</option><option>مكتملة</option></select></div><input id="novelCover" type="url" placeholder="رابط صورة الغلاف (اختياري)"><textarea id="novelDescription" placeholder="وصف مختصر وجذاب" required></textarea><input id="chapterTitle" placeholder="عنوان الفصل الأول" value="الفصل الأول" required><textarea id="chapterBody" placeholder="نص الفصل الأول" required></textarea><button class="btn primary">إرسال الرواية</button></form></div></div>
+  <div id="app-footer"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/supabase-config.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+    // ========================================
+    // تهيئة البيانات الافتراضية
+    // ========================================
+    
+    function initializeData() {
+      if (!localStorage.getItem('novels')) {
+        const sampleNovels = [
+          {
+            id: 1,
+            title: 'ظلال الماضي',
+            author: 'أحمد الكاتب',
+            category: 'غموض',
+            type: 'عربية',
+            status: 'مكتملة',
+            reads: 5847,
+            rating: 4.8,
+            description: 'رواية مشوقة تأخذك في رحلة عبر الزمن لكشف أسرار عائلة غامضة',
+            cover: 'https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=400',
+            date: '2026-05-10',
+            chapters: 15,
+            featured: true
+          },
+          {
+            id: 2,
+            title: 'همسات القلب',
+            author: 'سارة محمد',
+            category: 'رومانسية',
+            type: 'عربية',
+            status: 'مكتملة',
+            reads: 4521,
+            rating: 4.6,
+            description: 'قصة حب مؤثرة تجمع بين الواقع والخيال',
+            cover: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400',
+            date: '2026-05-08',
+            chapters: 12
+          },
+          {
+            id: 3,
+            title: 'عالم بلا حدود',
+            author: 'خالد عبدالله',
+            category: 'خيال علمي',
+            type: 'مترجمة',
+            status: 'قيد النشر',
+            reads: 3892,
+            rating: 4.7,
+            description: 'مغامرة في عالم المستقبل حيث لا حدود للخيال',
+            cover: 'https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=400',
+            date: '2026-05-06',
+            chapters: 20
+          },
+          {
+            id: 4,
+            title: 'أسرار المدينة القديمة',
+            author: 'منى العتيبي',
+            category: 'مغامرات',
+            type: 'عربية',
+            status: 'مكتملة',
+            reads: 3654,
+            rating: 4.5,
+            description: 'اكتشف أسرار مدينة عريقة مليئة بالخفايا',
+            cover: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400',
+            date: '2026-05-04',
+            chapters: 18
+          }
+        ];
+        
+        localStorage.setItem('novels', JSON.stringify(sampleNovels));
+        localStorage.setItem('novelIdCounter', '5');
+      }
+      
+      if (!localStorage.getItem('comments')) {
+        const sampleComments = [
+          {
+            id: 1,
+            name: 'محمد أحمد',
+            text: 'موقع رائع! أحببت رواية "ظلال الماضي" كثيرًا 📚',
+            date: new Date().toISOString()
+          }
+        ];
+        localStorage.setItem('comments', JSON.stringify(sampleComments));
+        localStorage.setItem('commentIdCounter', '2');
+      }
+    }
+    
+    // ========================================
+    // تحميل وعرض الروايات
+    // ========================================
+    
+    function loadNovels() {
+      const novels = JSON.parse(localStorage.getItem('novels') || '[]');
+      
+      // عرض الرواية المميزة
+      const featured = novels.find(n => n.featured) || novels[0];
+      if (featured) {
+        document.getElementById('featuredNovel').innerHTML = `
+          <div class="featured">
+            <div class="cover" style="background-image: url('${featured.cover}')"></div>
+            <div class="card">
+              <span class="tag premium">⭐ ${featured.status}</span>
+              <h3>${featured.title}</h3>
+              <p class="muted">${featured.author} • ${featured.category} • ${featured.chapters} فصل</p>
+              <p>${featured.description}</p>
+              <div style="display:flex;gap:12px;margin-top:16px">
+                <a class="btn primary" href="novel-${featured.id}.html">اقرأ الآن</a>
+                <span class="muted" style="padding:12px">👁️ ${featured.reads.toLocaleString()} قراءة</span>
+              </div>
+            </div>
+          </div>
+        `;
+        document.getElementById('featuredCount').textContent = `${novels.length} رواية متاحة`;
+      }
+      
+      // عرض أحدث الروايات
+      const latest = novels.slice(0, 4);
+      document.getElementById('latestNovels').innerHTML = latest.map(novel => `
+        <article class="post" onclick="window.location.href='novel-${novel.id}.html'">
+          <img src="${novel.cover}" alt="${novel.title}">
+          <span class="tag">${novel.type}</span>
+          <h3>${novel.title}</h3>
+          <p class="muted">${novel.description.substring(0, 80)}...</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+            <span class="muted">👁️ ${novel.reads.toLocaleString()}</span>
+            <span class="muted">⭐ ${novel.rating}</span>
+          </div>
+        </article>
+      `).join('');
+      
+      // عرض الأكثر قراءة
+      const top = [...novels].sort((a, b) => b.reads - a.reads).slice(0, 5);
+      document.getElementById('topNovels').innerHTML = top.map((novel, i) => `
+        <a href="novel-${novel.id}.html">
+          ${i + 1}. ${novel.title} <span class="muted">(${novel.reads.toLocaleString()} قراءة)</span>
+        </a>
+      `).join('');
+    }
+    
+    // ========================================
+    // تصفية الروايات
+    // ========================================
+    
+    function filterNovels(filter) {
+      const novels = JSON.parse(localStorage.getItem('novels') || '[]');
+      let filtered = novels;
+      
+      if (filter !== 'all') {
+        filtered = novels.filter(n => 
+          n.type === filter || n.status === filter
+        );
+      }
+      
+      document.getElementById('latestNovels').innerHTML = filtered.map(novel => `
+        <article class="post" onclick="window.location.href='novel-${novel.id}.html'">
+          <img src="${novel.cover}" alt="${novel.title}">
+          <span class="tag">${novel.type}</span>
+          <h3>${novel.title}</h3>
+          <p class="muted">${novel.description.substring(0, 80)}...</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+            <span class="muted">👁️ ${novel.reads.toLocaleString()}</span>
+            <span class="muted">⭐ ${novel.rating}</span>
+          </div>
+        </article>
+      `).join('') || '<p class="muted" style="padding:40px;text-align:center">لا توجد روايات في هذا القسم</p>';
+      
+      // Scroll to novels section
+      document.getElementById('novels').scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // ========================================
+    // التعليقات
+    // ========================================
+    
+    function loadComments() {
+      const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+      const list = document.getElementById('commentsList');
+      
+      if (comments.length === 0) {
+        list.innerHTML = '<p class="muted" style="text-align:center;padding:20px">لا توجد تعليقات بعد. كن أول من يعلق!</p>';
+        return;
+      }
+      
+      list.innerHTML = comments.slice().reverse().map(comment => `
+        <div style="padding:16px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid var(--line);margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <strong>${comment.name}</strong>
+            <span class="muted" style="font-size:.85rem">${new Date(comment.date).toLocaleDateString('ar')}</span>
+          </div>
+          <p style="color:var(--muted)">${comment.text}</p>
+        </div>
+      `).join('');
+    }
+    
+    function submitComment(event) {
+      event.preventDefault();
+      
+      const name = document.getElementById('commentName').value;
+      const text = document.getElementById('commentText').value;
+      
+      const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+      const counter = parseInt(localStorage.getItem('commentIdCounter') || '1');
+      
+      const newComment = {
+        id: counter,
+        name: name,
+        text: text,
+        date: new Date().toISOString()
+      };
+      
+      comments.push(newComment);
+      localStorage.setItem('comments', JSON.stringify(comments));
+      localStorage.setItem('commentIdCounter', (counter + 1).toString());
+      
+      // Reset form
+      document.getElementById('commentName').value = '';
+      document.getElementById('commentText').value = '';
+      
+      // Reload comments
+      loadComments();
+      
+      // Show success message
+      alert('✅ تم نشر تعليقك بنجاح!');
+    }
+    
+    // ========================================
+    // تهيئة الصفحة
+    // ========================================
+    
+    window.onload = function() {
+      initializeData();
+      loadNovels();
+      loadComments();
+    };
+    const NK = window.NovelsKingdom;
+    function novelUrl(id){ return `reader.html?id=${encodeURIComponent(id)}`; }
+    function renderAuth(){ const user=NK.currentUser(); const box=document.getElementById('authActions'); if(user){ box.innerHTML=`<span class="muted">مرحبًا، ${NK.escapeHtml(user.name)}</span><button onclick="openPublish()">✍️ نشر</button><button onclick="location.href='admin-dashboard.html'">لوحتي</button><button onclick="NK.logout();renderAll()">خروج</button>`; document.getElementById('commentName').value=user.name; document.getElementById('commentName').disabled=true; } else { box.innerHTML=`<button onclick="openAuth('login')">دخول</button><button class="btn primary" onclick="openAuth('register')">تسجيل جديد</button>`; document.getElementById('commentName').disabled=false; } }
+    function renderAuth(){ const user=NK.currentUser(); const box=document.getElementById('authActions'); if(user){ box.innerHTML=`<span class="muted">مرحبًا، ${NK.escapeHtml(user.name)}</span><button onclick="openPublish()">✍️ نشر</button><button onclick="location.href='admin-dashboard.html'">لوحتي</button><button onclick="doLogout()">خروج</button>`; document.getElementById('commentName').value=user.name; document.getElementById('commentName').disabled=true; } else { box.innerHTML=`<button onclick="openAuth('login')">دخول</button><button class="btn primary" onclick="openAuth('register')">تسجيل جديد</button>`; document.getElementById('commentName').disabled=false; } }
+    function card(novel){ return `<article class="post" onclick="location.href='${novelUrl(novel.id)}'"><img src="${NK.escapeHtml(novel.cover)}" alt="${NK.escapeHtml(novel.title)}"><span class="tag">${NK.escapeHtml(novel.type)}</span><h3>${NK.escapeHtml(novel.title)}</h3><p class="muted">${NK.escapeHtml(novel.description).slice(0,95)}...</p><div style="display:flex;justify-content:space-between"><span class="muted">👁️ ${novel.reads.toLocaleString('ar')}</span><span class="muted">⭐ ${novel.rating}</span></div></article>`; }
+    function renderNovels(list=NK.getNovels()){ const novels=list; const featured=novels.find(n=>n.featured)||novels[0]; document.getElementById('featuredCount').textContent=`${novels.length} رواية منشورة`; document.getElementById('featuredNovel').innerHTML=featured?`<div class="featured"><div class="cover" style="background-image:url('${NK.escapeHtml(featured.cover)}')"></div><div class="card"><span class="tag">⭐ ${NK.escapeHtml(featured.status)}</span><h3>${NK.escapeHtml(featured.title)}</h3><p class="muted">${NK.escapeHtml(featured.author)} • ${NK.escapeHtml(featured.category)} • ${featured.chapters.length} فصل</p><p>${NK.escapeHtml(featured.description)}</p><div class="cta"><a class="btn primary" href="${novelUrl(featured.id)}">اقرأ الآن</a><span class="muted" style="padding:12px">👁️ ${featured.reads.toLocaleString('ar')} قراءة</span></div></div></div>`:'<div class="empty">لا توجد روايات منشورة بعد.</div>'; document.getElementById('latestNovels').innerHTML=novels.map(card).join('')||'<div class="empty">لا توجد روايات في هذا القسم.</div>'; document.getElementById('topNovels').innerHTML=[...novels].sort((a,b)=>b.reads-a.reads).slice(0,5).map((n,i)=>`<a href="${novelUrl(n.id)}">${i+1}. ${NK.escapeHtml(n.title)} <span class="muted">(${n.reads.toLocaleString('ar')})</span></a>`).join('')||'<p class="muted">لا توجد بيانات.</p>'; }
+    function filterNovels(filter){ event.preventDefault(); const novels=NK.getNovels().filter(n=>filter==='all'||n.type===filter||n.status===filter); renderNovels(novels); document.getElementById('novels').scrollIntoView({behavior:'smooth'}); }
+    function renderComments(){ const comments=NK.getComments().filter(c=>!c.novelId).slice().reverse(); document.getElementById('commentsList').innerHTML=comments.map(c=>`<div class="mini"><strong>${NK.escapeHtml(c.name)}</strong><span class="muted" style="float:left">${new Date(c.date).toLocaleDateString('ar')}</span><p class="muted">${NK.escapeHtml(c.text)}</p></div>`).join('')||'<div class="empty">لا توجد تعليقات بعد. كن أول من يعلق!</div>'; }
+    function submitComment(e){ e.preventDefault(); NK.addComment({name:document.getElementById('commentName').value,text:document.getElementById('commentText').value}); e.target.reset(); renderAuth(); renderComments(); }
+    function submitComment(e){ e.preventDefault(); try{ NK.addComment({name:document.getElementById('commentName').value,text:document.getElementById('commentText').value}); e.target.reset(); renderAuth(); renderComments(); }catch(err){ alert(err.message); } }
+    function openAuth(mode='login'){ switchAuth(mode); document.getElementById('authModal').classList.add('open'); }
+    function switchAuth(mode){ document.getElementById('loginForm').style.display=mode==='login'?'grid':'none'; document.getElementById('registerForm').style.display=mode==='register'?'grid':'none'; document.getElementById('loginTab').classList.toggle('active',mode==='login'); document.getElementById('registerTab').classList.toggle('active',mode==='register'); }
+    function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+    function doLogin(e){ e.preventDefault(); try{ NK.login(loginEmail.value,loginPassword.value); closeModal('authModal'); renderAll(); }catch(err){ alert(err.message); } }
+    function doRegister(e){ e.preventDefault(); try{ NK.register({name:registerName.value,email:registerEmail.value,password:registerPassword.value,role:registerRole.value}); closeModal('authModal'); renderAll(); }catch(err){ alert(err.message); } }
+    async function doLogin(e){ e.preventDefault(); try{ await NK.login(loginEmail.value,loginPassword.value); closeModal('authModal'); renderAll(); }catch(err){ alert(err.message); } }
+    async function doRegister(e){ e.preventDefault(); try{ await NK.register({name:registerName.value,email:registerEmail.value,password:registerPassword.value,role:registerRole.value}); closeModal('authModal'); renderAll(); }catch(err){ alert(err.message); } }
+    function openPublish(){ if(!NK.currentUser()){ openAuth('register'); return; } document.getElementById('publishModal').classList.add('open'); }
+    async function doLogout(){ await NK.logout(); renderAll(); }
+    function submitNovel(e){ e.preventDefault(); const user=NK.currentUser(); const novel=NK.saveNovel({title:novelTitle.value,category:novelCategory.value,type:novelType.value,status:novelStatus.value,cover:novelCover.value||NK.covers[0],description:novelDescription.value,chapters:[{id:NK.uid('chapter'),title:chapterTitle.value,body:chapterBody.value}],author:user.name,authorId:user.id}); document.getElementById('publishStatus').style.display='block'; document.getElementById('publishStatus').textContent=novel.approved?'تم نشر الرواية بنجاح.':'تم إرسال الرواية للمراجعة وستظهر بعد موافقة الإدارة.'; e.target.reset(); renderAll(); }
+    function renderAll(){ const settings=NK.getSettings(); siteName.textContent=settings.siteName||'مملكة الروايات'; siteDescription.textContent=settings.description||siteDescription.textContent; patreonLink.href=settings.patreonUrl||'#'; renderAuth(); renderNovels(); renderComments(); }
+    renderAll();
+    NK.ready.then(renderAll);
+  </script>
+  <script src="js/supabase.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
