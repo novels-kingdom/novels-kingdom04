@@ -11,14 +11,19 @@ function novelCard(novel) {
   </article>`;
 }
 
+function renderNovels() {
+  const grid = document.getElementById('novelsGrid');
+  if (!grid) return;
 function filterNovels(novels) {
   const query = document.getElementById('searchInput')?.value.trim().toLowerCase() || '';
   const category = document.getElementById('categoryFilter')?.value || 'all';
+  const novels = NK.getNovels().filter((novel) => {
   return novels.filter((novel) => {
     const matchesQuery = [novel.title, novel.author, novel.description].join(' ').toLowerCase().includes(query);
     const matchesCategory = category === 'all' || novel.category === category;
     return matchesQuery && matchesCategory;
   });
+  grid.innerHTML = novels.length ? novels.map(novelCard).join('') : '<div class="empty-state">لم نجد روايات مطابقة للبحث الحالي.</div>';
 }
 
 async function renderNovels() {
