@@ -23,8 +23,8 @@
 │   ├── ui.js
 │   └── supabase.js
 ├── assets/
-│   ├── logo.png
-│   ├── hero.jpg
+│   ├── logo.svg
+│   ├── hero.svg
 │   └── covers/
 ├── components/
 │   ├── header.html
