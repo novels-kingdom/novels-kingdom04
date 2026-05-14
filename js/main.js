@@ -1,6 +1,10 @@
 function novelCard(novel) {
+  const cover = novel.cover
+    ? `<img src="${NK.escapeHtml(novel.cover)}" alt="غلاف ${NK.escapeHtml(novel.title)}" loading="lazy">`
+    : `<span class="cover-fallback" aria-hidden="true">📖</span>`;
+
   return `<article class="novel-card">
-    <a class="novel-cover" href="novel.html?id=${encodeURIComponent(novel.id)}" aria-label="قراءة ${NK.escapeHtml(novel.title)}">📖</a>
+    <a class="novel-cover" href="novel.html?id=${encodeURIComponent(novel.id)}" aria-label="قراءة ${NK.escapeHtml(novel.title)}">${cover}</a>
     <div class="novel-body">
       <div class="tags">
         <span class="tag">${NK.escapeHtml(novel.category)}</span>
@@ -25,25 +29,3 @@ const searchableText = [novel.title, novel.author, novel.description].join(' ').
     return matchesQuery && matchesCategory;
   });  
 }
-
-async function renderNovels() {
-  const grid = document.getElementById('novelsGrid');
-  if (!grid) return;
-
-  grid.innerHTML = '<div class="empty-state">جاري تحميل الروايات...</div>';
-
-  try {
-    const novels = filterNovels(await NKBackend.getNovels());
-    grid.innerHTML = novels.length
-      ? novels.map(novelCard).join('')
-      : '<div class="empty-state">لم نجد روايات مطابقة للبحث الحالي.</div>';
-  } catch (error) {
-    grid.innerHTML = `<div class="empty-state">${NK.escapeHtml(NK.formatError(error, 'تعذر تحميل الروايات.'))}</div>`;
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('searchInput')?.addEventListener('input', renderNovels);
-  document.getElementById('categoryFilter')?.addEventListener('change', renderNovels);
-  renderNovels();
-});  
