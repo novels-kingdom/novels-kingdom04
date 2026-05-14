@@ -16,7 +16,18 @@
     'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=900&q=80'
   ];
 
+  const config = window.NK_SUPABASE || {};
+  const hasSupabase = Boolean(config.url && config.publishableKey && window.supabase?.createClient);
+  const supabaseClient = hasSupabase
+    ? window.supabase.createClient(config.url, config.publishableKey, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    })
+    : null;
+
+  let remoteReady = false;
+
   function uid(prefix) {
+    if (crypto?.randomUUID) return `${prefix}-${crypto.randomUUID()}`;
     return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
   }
 
@@ -35,6 +46,7 @@
   }
 
   function normalizeNovel(novel, index) {
+  function normalizeNovel(novel, index = 0) {
     const id = novel.id || uid('novel');
     const status = novel.status === 'منشورة' ? 'مكتملة' : (novel.status || 'قيد النشر');
     return {
@@ -44,15 +56,24 @@
       authorId: novel.authorId || 'seed-admin',
       category: novel.category || 'عام',
       type: novel.type || 'عربية',
+      title: String(novel.title || 'رواية بلا عنوان').trim(),
+      author: String(novel.author || 'كاتب مجهول').trim(),
+      authorId: novel.authorId || novel.author_id || 'guest',
+      category: String(novel.category || 'عام').trim(),
+      type: novel.type === 'مترجمة' ? 'مترجمة' : 'عربية',
       status,
       reads: Number(novel.reads || 0),
       rating: Number(novel.rating || 4.5),
       description: novel.description || 'وصف مختصر للرواية.',
+      description: String(novel.description || 'وصف مختصر للرواية.').trim(),
       cover: novel.cover || covers[index % covers.length],
       date: novel.date || new Date().toISOString().slice(0, 10),
       chapters: Array.isArray(novel.chapters)
+      date: novel.date || novel.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+      chapters: Array.isArray(novel.chapters) && novel.chapters.length
         ? novel.chapters
         : [{ id: uid('chapter'), title: 'الفصل الأول', body: novel.body || 'ابدأ رحلتك القرائية من هنا. يمكن للكاتب إضافة فصول جديدة من لوحة التحكم.' }],
+        : [{ id: uid('chapter'), title: 'الفصل الأول', body: novel.body || 'ابدأ رحلتك القرائية من هنا.' }],
       featured: Boolean(novel.featured || index === 0),
       approved: novel.approved !== false,
       premium: Boolean(novel.premium)
@@ -60,6 +81,31 @@
   }
 
   function seed() {
+  function sanitizeText(value, max = 5000) {
+    return String(value || '').replace(/[\u0000-\u001F\u007F]/g, '').trim().slice(0, max);
+  }
+
+  function validateUrl(url) {
+    if (!url) return '';
+    try {
+      const parsed = new URL(url);
+      return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : '';
+    } catch {
+      return '';
+    }
+  }
+
+  function escapeHtml(value = '') {
+    return String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+  }
+
+  async function sha256(value) {
+    const data = new TextEncoder().encode(value);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  function seedLocalData() {
     const settings = read(STORAGE.settings, null) || {
       siteName: 'مملكة الروايات',
       description: 'منصة عربية احترافية لنشر الروايات وقراءتها وإدارة مجتمع القراء والكتّاب.',
@@ -73,6 +119,7 @@
       { id: 'seed-author', name: 'سارة محمد', email: 'author@site.com', password: 'author123', role: 'author', joinedAt: '2026-05-03' }
     ];
     write(STORAGE.users, users);
+    if (!localStorage.getItem(STORAGE.users)) write(STORAGE.users, []);
 
     if (!localStorage.getItem(STORAGE.novels)) {
       const legacy = read(STORAGE.legacyNovels, []);
@@ -97,9 +144,60 @@
         name: comment.name || 'قارئ',
         text: comment.text || '',
         date: comment.date || new Date().toISOString(),
+        novelId: comment.novelId || comment.novel_id || null,
+        userId: comment.userId || comment.user_id || null,
+        name: sanitizeText(comment.name || 'قارئ', 80),
+        text: sanitizeText(comment.text || '', 1000),
+        date: comment.date || comment.created_at || new Date().toISOString(),
         approved: comment.approved !== false
       })));
     }
+  }
+
+  function fromNovelRow(row, index) {
+    return normalizeNovel({ ...row, authorId: row.author_id, date: row.created_at?.slice(0, 10) || row.date }, index);
+  }
+
+  function toNovelRow(novel) {
+    return {
+      id: String(novel.id),
+      title: sanitizeText(novel.title, 180),
+      author: sanitizeText(novel.author, 120),
+      author_id: novel.authorId || null,
+      category: sanitizeText(novel.category, 80),
+      type: novel.type,
+      status: novel.status,
+      reads: Number(novel.reads || 0),
+      rating: Number(novel.rating || 4.5),
+      description: sanitizeText(novel.description, 1500),
+      cover: validateUrl(novel.cover) || covers[0],
+      chapters: Array.isArray(novel.chapters) ? novel.chapters.map((chapter) => ({
+        id: chapter.id || uid('chapter'),
+        title: sanitizeText(chapter.title, 180),
+        body: sanitizeText(chapter.body, 50000)
+      })) : [],
+      featured: Boolean(novel.featured),
+      approved: Boolean(novel.approved),
+      premium: Boolean(novel.premium)
+    };
+  }
+
+  function fromCommentRow(row) {
+    return {
+      id: row.id,
+      novelId: row.novel_id || null,
+      userId: row.user_id || null,
+      name: row.name || 'قارئ',
+      text: row.text || '',
+      date: row.created_at || new Date().toISOString(),
+      approved: row.approved !== false
+    };
+  }
+
+  function currentUser() {
+    const session = read(STORAGE.session, null);
+    if (!session) return null;
+    return getUsers().find((user) => user.id === session.userId) || session.user || null;
   }
 
   function getNovels(includePending = false) {
@@ -108,6 +206,7 @@
 
   function saveNovels(novels) {
     write(STORAGE.novels, novels);
+    write(STORAGE.novels, novels.map(normalizeNovel));
   }
 
   function getUsers() {
@@ -122,6 +221,8 @@
     const session = read(STORAGE.session, null);
     if (!session) return null;
     return getUsers().find((user) => user.id === session.userId) || null;
+  function getComments(includePending = false) {
+    return read(STORAGE.comments, []).filter((comment) => includePending || comment.approved);
   }
 
   function register({ name, email, password, role }) {
@@ -129,7 +230,22 @@
     const normalizedEmail = email.trim().toLowerCase();
     if (users.some((user) => user.email.toLowerCase() === normalizedEmail)) {
       throw new Error('هذا البريد مسجل بالفعل. جرّب تسجيل الدخول.');
+  function getSettings() {
+    return read(STORAGE.settings, {});
+  }
+
+  async function refreshSession() {
+    if (!supabaseClient) return currentUser();
+    const { data: authData } = await supabaseClient.auth.getUser();
+    if (!authData?.user) {
+      localStorage.removeItem(STORAGE.session);
+      return null;
     }
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('id,name,email,role,created_at')
+      .eq('id', authData.user.id)
+      .maybeSingle();
     const user = {
       id: uid('user'),
       name: name.trim(),
@@ -137,22 +253,95 @@
       password,
       role: role === 'reader' ? 'reader' : 'author',
       joinedAt: new Date().toISOString().slice(0, 10)
+      id: authData.user.id,
+      name: profile?.name || authData.user.user_metadata?.name || authData.user.email?.split('@')[0] || 'مستخدم',
+      email: profile?.email || authData.user.email || '',
+      role: profile?.role || authData.user.user_metadata?.role || 'reader',
+      joinedAt: (profile?.created_at || authData.user.created_at || new Date().toISOString()).slice(0, 10)
     };
+    const users = getUsers().filter((item) => item.id !== user.id);
     users.push(user);
     saveUsers(users);
     write(STORAGE.session, { userId: user.id, loggedAt: new Date().toISOString() });
+    write(STORAGE.session, { userId: user.id, user, loggedAt: new Date().toISOString() });
     return user;
   }
 
   function login(email, password) {
     const normalized = email.trim().toLowerCase();
     const user = getUsers().find((item) => item.email.toLowerCase() === normalized && item.password === password);
+  async function syncFromSupabase() {
+    if (!supabaseClient) return;
+    const [settingsResult, novelsResult, commentsResult, profilesResult] = await Promise.all([
+      supabaseClient.from('settings').select('*').eq('id', 'main').maybeSingle(),
+      supabaseClient.from('novels').select('*').order('created_at', { ascending: false }),
+      supabaseClient.from('comments').select('*').order('created_at', { ascending: false }),
+      supabaseClient.from('profiles').select('id,name,email,role,created_at')
+    ]);
+
+    if (!settingsResult.error && settingsResult.data) write(STORAGE.settings, settingsResult.data.value || {});
+    if (!novelsResult.error && Array.isArray(novelsResult.data)) write(STORAGE.novels, novelsResult.data.map(fromNovelRow));
+    if (!commentsResult.error && Array.isArray(commentsResult.data)) write(STORAGE.comments, commentsResult.data.map(fromCommentRow));
+    if (!profilesResult.error && Array.isArray(profilesResult.data)) {
+      write(STORAGE.users, profilesResult.data.map((profile) => ({
+        id: profile.id,
+        name: profile.name || 'مستخدم',
+        email: profile.email || '',
+        role: profile.role || 'reader',
+        joinedAt: (profile.created_at || new Date().toISOString()).slice(0, 10)
+      })));
+    }
+    remoteReady = true;
+  }
+
+  async function register({ name, email, password, role }) {
+    const normalizedEmail = sanitizeText(email, 180).toLowerCase();
+    const cleanName = sanitizeText(name, 100);
+    const cleanRole = role === 'reader' ? 'reader' : 'author';
+    if (!cleanName || !normalizedEmail || String(password || '').length < 8) {
+      throw new Error('أدخل اسمًا وبريدًا صحيحين وكلمة مرور لا تقل عن 8 أحرف.');
+    }
+
+    if (supabaseClient) {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email: normalizedEmail,
+        password,
+        options: { data: { name: cleanName, role: cleanRole } }
+      });
+      if (error) throw new Error(error.message);
+      const authUser = data.user;
+      if (!authUser) throw new Error('تحقق من بريدك لإكمال التسجيل.');
+      await supabaseClient.from('profiles').upsert({ id: authUser.id, name: cleanName, email: normalizedEmail, role: cleanRole });
+      return refreshSession();
+    }
+
+    const users = getUsers();
+    if (users.some((user) => user.email.toLowerCase() === normalizedEmail)) throw new Error('هذا البريد مسجل بالفعل.');
+    const user = { id: uid('user'), name: cleanName, email: normalizedEmail, passwordHash: await sha256(password), role: cleanRole, joinedAt: new Date().toISOString().slice(0, 10) };
+    users.push(user);
+    saveUsers(users);
+    write(STORAGE.session, { userId: user.id, user, loggedAt: new Date().toISOString() });
+    return user;
+  }
+
+  async function login(email, password) {
+    const normalized = sanitizeText(email, 180).toLowerCase();
+    if (supabaseClient) {
+      const { error } = await supabaseClient.auth.signInWithPassword({ email: normalized, password });
+      if (error) throw new Error('بيانات الدخول غير صحيحة أو البريد لم يتم تأكيده.');
+      return refreshSession();
+    }
+    const passwordHash = await sha256(password);
+    const user = getUsers().find((item) => item.email.toLowerCase() === normalized && item.passwordHash === passwordHash);
     if (!user) throw new Error('بيانات الدخول غير صحيحة.');
     write(STORAGE.session, { userId: user.id, loggedAt: new Date().toISOString() });
+    write(STORAGE.session, { userId: user.id, user, loggedAt: new Date().toISOString() });
     return user;
   }
 
   function logout() {
+  async function logout() {
+    if (supabaseClient) await supabaseClient.auth.signOut();
     localStorage.removeItem(STORAGE.session);
   }
 
@@ -160,6 +349,7 @@
     const novels = getNovels(true);
     const user = currentUser();
     const isAdmin = user && user.role === 'admin';
+    const isAdmin = user?.role === 'admin';
     const existingIndex = novels.findIndex((novel) => String(novel.id) === String(data.id));
     const existing = existingIndex >= 0 ? novels[existingIndex] : null;
     if (data.featured) {
@@ -168,16 +358,30 @@
     const novel = normalizeNovel({ ...existing, ...data }, novels.length);
     novel.authorId = data.authorId || existing?.authorId || user?.id || 'guest';
     novel.author = data.author || existing?.author || user?.name || 'كاتب زائر';
+    if (data.featured) novels.forEach((item) => { item.featured = false; });
+    const novel = normalizeNovel({ ...existing, ...data, cover: validateUrl(data.cover) || existing?.cover || covers[0] }, novels.length);
+    novel.authorId = data.authorId || existing?.authorId || user?.id || null;
+    novel.author = sanitizeText(data.author || existing?.author || user?.name || 'كاتب زائر', 120);
     novel.approved = typeof data.approved === 'boolean' ? data.approved : (isAdmin ? true : existing?.approved ?? false);
     novel.date = existing?.date || new Date().toISOString().slice(0, 10);
     if (existingIndex >= 0) novels[existingIndex] = novel;
     else novels.unshift(novel);
     saveNovels(novels);
+
+    if (supabaseClient) {
+      supabaseClient.from('novels').upsert(toNovelRow(novel)).select().single()
+        .then(({ error }) => { if (error) console.warn('Novel sync failed:', error.message); })
+        .then(() => syncFromSupabase().catch(console.warn));
+    }
     return novel;
   }
 
   function deleteNovel(id) {
     saveNovels(getNovels(true).filter((novel) => String(novel.id) !== String(id)));
+    if (supabaseClient) {
+      supabaseClient.from('novels').delete().eq('id', String(id))
+        .then(({ error }) => { if (error) console.warn('Delete novel sync failed:', error.message); });
+    }
   }
 
   function incrementRead(id) {
@@ -186,6 +390,9 @@
     if (novel) {
       novel.reads += 1;
       saveNovels(novels);
+    }
+    if (supabaseClient && id) {
+      Promise.resolve(supabaseClient.rpc('increment_novel_reads', { novel_id: String(id) })).catch(console.warn);
     }
     return novel;
   }
@@ -198,20 +405,33 @@
     const user = currentUser();
     const comments = getComments(true);
     comments.push({
+    const comment = {
       id: uid('comment'),
       novelId,
       userId: user?.id || null,
       name: user?.name || name || 'قارئ',
       text,
+      name: sanitizeText(user?.name || name || 'قارئ', 80),
+      text: sanitizeText(text, 1000),
       date: new Date().toISOString(),
       approved: true
     });
+    };
+    if (!comment.text) throw new Error('لا يمكن نشر تعليق فارغ.');
+    const comments = getComments(true);
+    comments.push(comment);
     write(STORAGE.comments, comments);
+    if (supabaseClient) {
+      supabaseClient.from('comments').insert({ id: comment.id, novel_id: comment.novelId, user_id: comment.userId, name: comment.name, text: comment.text, approved: true })
+        .then(({ error }) => { if (error) console.warn('Comment sync failed:', error.message); });
+    }
+    return comment;
   }
 
   function updateComment(id, changes) {
     const comments = getComments(true).map((comment) => String(comment.id) === String(id) ? { ...comment, ...changes } : comment);
     write(STORAGE.comments, comments);
+    if (supabaseClient) Promise.resolve(supabaseClient.from('comments').update(changes).eq('id', String(id))).catch(console.warn);
   }
 
   function deleteComment(id) {
@@ -220,10 +440,25 @@
 
   function getSettings() {
     return read(STORAGE.settings, {});
+    if (supabaseClient) {
+      supabaseClient.from('comments').delete().eq('id', String(id))
+        .then(({ error }) => { if (error) console.warn('Delete comment sync failed:', error.message); });
+    }
   }
 
   function saveSettings(settings) {
     write(STORAGE.settings, { ...getSettings(), ...settings });
+    const safeSettings = {
+      siteName: sanitizeText(settings.siteName, 120),
+      description: sanitizeText(settings.description, 500),
+      contactEmail: sanitizeText(settings.contactEmail, 180),
+      patreonUrl: validateUrl(settings.patreonUrl)
+    };
+    write(STORAGE.settings, { ...getSettings(), ...safeSettings });
+    if (supabaseClient) {
+      supabaseClient.from('settings').upsert({ id: 'main', value: getSettings() })
+        .then(({ error }) => { if (error) console.warn('Settings sync failed:', error.message); });
+    }
   }
 
   function stats() {
@@ -244,12 +479,22 @@
   function escapeHtml(value = '') {
     return String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
   }
+  seedLocalData();
 
   seed();
+  const ready = (async () => {
+    await refreshSession().catch(console.warn);
+    await syncFromSupabase().catch((error) => console.warn('Supabase sync failed:', error));
+  })();
 
   window.NovelsKingdom = {
     covers,
     seed,
+    supabase: supabaseClient,
+    isSupabaseEnabled: hasSupabase,
+    isRemoteReady: () => remoteReady,
+    ready,
+    seed: seedLocalData,
     read,
     write,
     getNovels,
