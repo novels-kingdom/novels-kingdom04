@@ -1,4 +1,4 @@
-@@ -2,51 +2,51 @@
+-- Supabase schema for Novels Kingdom.
 -- Run this once in the Supabase SQL editor, then create the first admin user in Auth
 -- and update profiles.role to 'admin' for that user.
 
@@ -24,7 +24,6 @@ create table if not exists public.novels (
   author_id uuid references public.profiles(id) on delete set null,
   category text not null default 'عام',
   type text not null default 'عربية' check (type in ('عربية', 'مترجمة')),
-  status text not null default 'قيد النشر' check (status in ('قيد النشر', 'مكتملة')),
   status text not null default 'مستمرة' check (status in ('مستمرة', 'مكتملة', 'مسودة')),
   reads integer not null default 0 check (reads >= 0),
   rating numeric(2,1) not null default 4.5 check (rating between 0 and 5),
@@ -51,7 +50,85 @@ create table if not exists public.comments (
 create table if not exists public.settings (
   id text primary key default 'main',
   value jsonb not null default '{}'::jsonb,
-@@ -132,76 +132,145 @@ using (true);
+  updated_at timestamptz not null default now(),
+  constraint settings_singleton check (id = 'main')
+);
+
+create or replace function public.touch_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists novels_touch_updated_at on public.novels;
+create trigger novels_touch_updated_at
+before update on public.novels
+for each row execute function public.touch_updated_at();
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'admin'
+  );
+$$;
+
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (id, name, email, role)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
+    coalesce(new.email, ''),
+    case when new.raw_user_meta_data->>'role' = 'author' then 'author'::public.user_role else 'reader'::public.user_role end
+  )
+  on conflict (id) do update set
+    name = excluded.name,
+    email = excluded.email;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+after insert on auth.users
+for each row execute function public.handle_new_user();
+
+create or replace function public.increment_novel_reads(novel_id text)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.novels
+  set reads = reads + 1
+  where id = novel_id and approved = true;
+$$;
+
+alter table public.profiles enable row level security;
+alter table public.novels enable row level security;
+alter table public.comments enable row level security;
+alter table public.settings enable row level security;
+
+drop policy if exists "profiles are readable by authenticated users" on public.profiles;
+create policy "profiles are readable by authenticated users"
+on public.profiles for select
+to authenticated
+using (true);
 
 drop policy if exists "users update own non role profile" on public.profiles;
 create policy "users update own non role profile"
@@ -77,7 +154,6 @@ drop policy if exists "authors create own pending novels" on public.novels;
 create policy "authors create own pending novels"
 on public.novels for insert
 to authenticated
-with check (author_id = auth.uid() and approved = false);
 with check (author_id = auth.uid() and (approved = false or public.is_admin()));
 
 drop policy if exists "authors update own pending novels" on public.novels;
