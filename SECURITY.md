@@ -1,7 +1,9 @@
-# Security notes
+ملاحظات الأمان قبل النشر
 
-- The browser app uses the Supabase publishable key only. This key is public by design, but it must be protected with Row Level Security policies.
-- Never commit a Supabase `service_role` key, database password, or JWT signing secret to this repository.
-- Run `supabase/schema.sql` in the Supabase SQL editor before opening the site to public users.
-- Create the first administrator through Supabase Auth, then set that row in `profiles.role` to `admin` from the Supabase dashboard.
-- If any private key was shared publicly by mistake, rotate it from the Supabase dashboard before deploying.
+- لا تضع مفتاح `service_role` أو كلمة مرور قاعدة البيانات أو أي أسرار داخل ملفات الواجهة.
+- الملف `js/supabase.js` يجب أن يحتوي فقط على رابط المشروع ومفتاح `publishable` العام.
+- نفّذ `supabase/schema.sql` كاملًا من Supabase SQL Editor قبل نشر الموقع.
+- أبقِ Row Level Security مفعّلًا على جداول `profiles`, `novels`, `comments`, و`settings`.
+- عيّن أول مدير يدويًا من جدول `profiles` بتغيير `role` إلى `admin` بعد إنشاء الحساب.
+- راجع سياسات الموافقة على الروايات والتعليقات قبل فتح التسجيل للعامة.
+- فعّل تأكيد البريد الإلكتروني، وحدود المعدل، والحماية من الرسائل المزعجة من إعدادات Supabase Auth.
