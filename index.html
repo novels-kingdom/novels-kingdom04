@@ -378,6 +378,37 @@
             <option value="مغامرة">مغامرة</option>
           </select>
         </div>
+        <h2>روايات مختارة للانطلاق</h2>
+        <p class="muted">جرّب المنصة ببيانات محلية قابلة للتعديل، ثم أضف أعمالك من صفحة النشر.</p>
+      </aside>
+    </section>
+    <section class="container section" id="novels">
+      <div class="section-head">
+        <div>
+          <h2>أحدث الروايات</h2>
+          <p class="muted">ابحث بالعنوان أو الكاتب، وصفِّ الأعمال حسب التصنيف.</p>
+        </div>
+        <div class="filters">
+          <input class="search-input" id="searchInput" type="search" placeholder="ابحث عن رواية...">
+          <select class="select" id="categoryFilter" aria-label="تصفية التصنيف">
+            <option value="all">كل التصنيفات</option>
+            <option value="غموض">غموض</option>
+            <option value="فانتازيا">فانتازيا</option>
+            <option value="رومانسي">رومانسي</option>
+            <option value="مغامرة">مغامرة</option>
+          </select>
+        </div>
+      </div>
+      <div class="novels-grid" id="novelsGrid"></div>
+    </section>
+  </main>
+  <div id="app-footer"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
       </div>
 
       <aside class="sidebar">
