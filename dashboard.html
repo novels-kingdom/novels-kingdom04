@@ -1,17 +1,27 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>لوحة التحكم | مملكة الروايات</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta name="description" content="لوحة تحكم مملكة الروايات لمتابعة الروايات والتعليقات وحالة الموافقة.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css"><link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body>
   <div id="app-header"></div>
-  <main class="container dashboard-shell" id="dashboardRoot"></main>
+  
+  <main class="container dashboard-shell" id="dashboardRoot">
+    <section class="panel">
+      <p class="muted">جاري تحميل لوحة التحكم...</p>
+    </section>
+  </main>
+
   <div id="app-footer"></div>
-  <script src="js/ui.js"></script><script src="js/novels.js"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/ui.js"></script>
