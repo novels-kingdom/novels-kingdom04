@@ -1,3 +1,39 @@
+function renderNovelPage() {
+  const root = document.getElementById('novelPage');
+  if (!root) return;
+  const id = new URLSearchParams(location.search).get('id');
+  const novels = NK.getNovels();
+  const novel = novels.find((item) => item.id === id) || novels[0];
+  if (!novel) { root.innerHTML = '<div class="container panel">لا توجد رواية للعرض.</div>'; return; }
+  novel.reads = Number(novel.reads || 0) + 1;
+  NK.saveNovels(novels);
+  document.title = `${novel.title} | مملكة الروايات`;
+  root.innerHTML = `<section class="container novel-hero">
+    <div class="novel-art">📚</div>
+    <div class="panel novel-info">
+      <span class="eyebrow">${NK.escapeHtml(novel.type)} · ${NK.escapeHtml(novel.status)}</span>
+      <h1>${NK.escapeHtml(novel.title)}</h1>
+      <p class="lead">${NK.escapeHtml(novel.description)}</p>
+      <p class="novel-meta">✍️ ${NK.escapeHtml(novel.author)} · ${NK.escapeHtml(novel.category)} · 👁️ ${Number(novel.reads).toLocaleString('ar')} · ⭐ ${novel.rating}</p>
+    </div>
+  </section>
+  <section class="container section">
+    <div class="section-head"><div><h2>الفصول</h2><p class="muted">ابدأ القراءة بالترتيب أو انتقل للفصل الذي تريده.</p></div></div>
+    <div class="chapter-list">${novel.chapters.map((chapter, index) => `<article class="chapter"><span class="tag">الفصل ${index + 1}</span><h3>${NK.escapeHtml(chapter.title)}</h3><p class="chapter-body">${NK.escapeHtml(chapter.body)}</p></article>`).join('')}</div>
+  </section>
+  <section class="container section"><div class="panel"><h2>التعليقات</h2><form id="commentForm" class="publish-form"><input class="form-control" name="name" placeholder="اسمك" required><textarea class="form-control" name="text" placeholder="اكتب تعليقك" required></textarea><button class="btn btn-primary">نشر التعليق</button></form><div id="commentsList" class="comments"></div></div></section>`;
+  const user = NK.currentUser();
+  const nameInput = root.querySelector('[name="name"]');
+  if (user) { nameInput.value = user.name; nameInput.readOnly = true; }
+  root.querySelector('#commentForm').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    NK.addComment({ novelId: novel.id, name: form.get('name'), text: form.get('text') });
+    event.currentTarget.reset();
+    if (user) nameInput.value = user.name;
+    renderComments(novel.id);
+  });
+  renderComments(novel.id);
 function chapterTemplate(chapter, index) {
   return `<article class="chapter">
     <span class="tag">الفصل ${index + 1}</span>
@@ -6,9 +42,12 @@ function chapterTemplate(chapter, index) {
   </article>`;
 }
 
+function renderComments(novelId) {
 async function renderComments(novelId) {
   const list = document.getElementById('commentsList');
   if (!list) return;
+  const comments = NK.getComments(novelId).slice().reverse();
+  list.innerHTML = comments.length ? comments.map((comment) => `<div class="comment"><strong>${NK.escapeHtml(comment.name)}</strong><p>${NK.escapeHtml(comment.text)}</p><span class="muted">${new Date(comment.createdAt).toLocaleDateString('ar')}</span></div>`).join('') : '<p class="muted">لا توجد تعليقات بعد.</p>';
   list.innerHTML = '<p class="muted">جاري تحميل التعليقات...</p>';
 
   try {
@@ -21,6 +60,7 @@ async function renderComments(novelId) {
   }
 }
 
+function handlePublish(event) {
 async function renderNovelPage() {
   const root = document.getElementById('novelPage');
   if (!root) return;
@@ -78,6 +118,9 @@ async function renderNovelPage() {
 
 async function handlePublish(event) {
   event.preventDefault();
+  const user = NK.currentUser();
+  if (!user) { NK.showToast('سجّل الدخول أولًا لنشر روايتك.', 'error'); setTimeout(() => location.href = 'login.html', 900); return; }
+  const form = new FormData(event.currentTarget);
   const user = await NK.currentUser();
   if (!user) {
     NK.showToast('سجّل الدخول أولًا لنشر روايتك.', 'error');
@@ -89,6 +132,25 @@ async function handlePublish(event) {
   const button = formElement.querySelector('button[type="submit"]');
   const form = new FormData(formElement);
   const title = String(form.get('title')).trim();
+  const novel = {
+    id: NK.slugify(title),
+    title,
+    author: String(form.get('author')).trim() || user.name,
+    category: form.get('category'),
+    status: form.get('status'),
+    type: form.get('type'),
+    reads: 0,
+    rating: 4.5,
+    description: String(form.get('description')).trim(),
+    chapters: [{ title: String(form.get('chapterTitle')).trim() || 'الفصل الأول', body: String(form.get('chapterBody')).trim() }],
+    publishedAt: new Date().toISOString().slice(0, 10),
+    ownerId: user.id
+  };
+  const novels = NK.getNovels();
+  novels.unshift(novel);
+  NK.saveNovels(novels);
+  NK.showToast('تم نشر الرواية بنجاح.');
+  setTimeout(() => location.href = `novel.html?id=${encodeURIComponent(novel.id)}`, 800);
   button.disabled = true;
   button.textContent = 'جاري النشر...';
 
@@ -114,9 +176,17 @@ async function handlePublish(event) {
   }
 }
 
+function renderDashboard() {
 async function renderDashboard() {
   const root = document.getElementById('dashboardRoot');
   if (!root) return;
+  const user = NK.currentUser();
+  if (!user) { root.innerHTML = '<div class="panel"><h1>يلزم تسجيل الدخول</h1><p class="muted">سجّل الدخول للوصول إلى لوحة التحكم.</p><a class="btn btn-primary" href="login.html">تسجيل الدخول</a></div>'; return; }
+  const novels = NK.getNovels();
+  const mine = user.role === 'admin' ? novels : novels.filter((novel) => novel.ownerId === user.id || novel.author === user.name);
+  root.innerHTML = `<div class="dashboard-hero"><div><h1>أهلًا، ${NK.escapeHtml(user.name)}</h1><p class="muted">تابع رواياتك وإحصاءات المنصة من مكان واحد.</p></div><a class="btn btn-primary" href="publish.html">نشر رواية جديدة</a></div>
+  <div class="stats-grid"><div class="stat-card"><span>الروايات</span><strong>${mine.length}</strong></div><div class="stat-card"><span>القراءات</span><strong>${mine.reduce((sum, novel) => sum + Number(novel.reads || 0), 0).toLocaleString('ar')}</strong></div><div class="stat-card"><span>التعليقات</span><strong>${mine.reduce((sum, novel) => sum + NK.getComments(novel.id).length, 0)}</strong></div><div class="stat-card"><span>الدور</span><strong>${user.role === 'admin' ? 'مدير' : 'كاتب'}</strong></div></div>
+  <div class="dashboard-grid"><section class="panel table-wrap"><h2>رواياتي</h2><table><thead><tr><th>العنوان</th><th>التصنيف</th><th>الحالة</th><th>القراءات</th><th></th></tr></thead><tbody>${mine.map((novel) => `<tr><td>${NK.escapeHtml(novel.title)}</td><td>${NK.escapeHtml(novel.category)}</td><td><span class="status published">${NK.escapeHtml(novel.status)}</span></td><td>${Number(novel.reads).toLocaleString('ar')}</td><td><a href="novel.html?id=${encodeURIComponent(novel.id)}">عرض</a></td></tr>`).join('') || '<tr><td colspan="5">لم تنشر روايات بعد.</td></tr>'}</tbody></table></section><aside class="panel"><h2>آخر النشاط</h2><div class="activity-list">${novels.slice(0, 4).map((novel) => `<div class="activity-item">نُشرت رواية <strong>${NK.escapeHtml(novel.title)}</strong><br><span class="muted">${novel.publishedAt || 'اليوم'}</span></div>`).join('')}</div></aside></div>`;
   root.innerHTML = '<div class="panel">جاري تحميل لوحة التحكم...</div>';
 
   try {
