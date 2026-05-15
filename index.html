@@ -7,14 +7,14 @@
   <meta name="description" content="اكتشف روايات عربية ومترجمة، انشر فصولك الأولى، وابنِ مجتمعًا أدبيًا أنيقًا مع القراء والكتّاب في مملكة الروايات.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Noto+Naskh+Arabic:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Noto+Naskh+Arabic:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div id="app-header"></div>
 
   <main>
-<section class="hero-shell">
+        <section class="hero-shell">
       <div class="container hero hero-luxe">
         <div class="hero-copy reveal-card">
           <span class="eyebrow">مملكة الروايات</span>
@@ -24,20 +24,9 @@
             <a class="btn btn-primary" href="#novels">استكشف المكتبة</a>
             <a class="btn btn-secondary" href="publish.html">ابدأ نشر روايتك</a>
           </div>
-          <dl class="hero-stats" aria-label="إحصاءات المنصة">
-            <div>
-              <dt>+120</dt>
-              <dd>عمل أدبي قابل للنمو</dd>
-            </div>
-            <div>
-              <dt>24/7</dt>
-              <dd>قراءة من أي جهاز</dd>
-            </div>
-            <div>
-              <dt>RLS</dt>
-              <dd>حماية بيانات Supabase</dd>
-            </div>
-          </dl>
+                  <div class="home-stat-grid" id="homeStats" aria-label="إحصاءات المنصة">
+            <div class="home-stat"><strong>...</strong><span>جاري تحميل الإحصاءات</span></div>
+          </div>
         </div>
 
         <aside class="hero-showcase reveal-card" aria-label="لمحة عن تجربة القراءة">
@@ -54,7 +43,7 @@
       </div>
     </section>
 
-<section class="container section features-grid" aria-label="مميزات مملكة الروايات">
+     <section class="container section features-grid" aria-label="مميزات مملكة الروايات">
       <article class="feature-card">
         <span class="feature-icon">✒️</span>
         <h2>نشر منظم</h2>
@@ -72,33 +61,64 @@
       </article>
     </section>
 
-<section class="container section library-panel" id="novels">
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">المكتبة</span>
-          <h2>الروايات المتاحة</h2>
-          <p class="muted">تظهر هنا الروايات الموافق عليها من قاعدة بيانات Supabase.</p>
+    <section class="container section home-layout" id="novels">
+      <div class="library-panel">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">المكتبة</span>
+            <h2>الروايات المتاحة</h2>
+            <p class="muted">تظهر هنا الروايات الموافق عليها من قاعدة بيانات Supabase.</p>
+          </div>
+          <div class="filters" aria-label="بحث وتصفية الروايات">
+            <label class="sr-only" for="searchInput">ابحث عن رواية أو كاتب</label>
+            <input class="search-input" id="searchInput" type="search" placeholder="ابحث عن رواية أو كاتب">
+            <label class="sr-only" for="categoryFilter">تصفية حسب التصنيف</label>
+            <select class="select" id="categoryFilter" aria-label="تصفية حسب التصنيف">
+              <option value="all">كل التصنيفات</option>
+              <option value="غموض">غموض</option>
+              <option value="فانتازيا">فانتازيا</option>
+              <option value="رومانسي">رومانسي</option>
+              <option value="رومانسية">رومانسية</option>
+              <option value="مغامرة">مغامرة</option>
+              <option value="مغامرات">مغامرات</option>
+              <option value="دراما">دراما</option>
+              <option value="خيال علمي">خيال علمي</option>
+              <option value="تاريخية">تاريخية</option>
+              <option value="رعب">رعب</option>
+              <option value="عام">عام</option>
+            </select>
+          </div>
         </div>
-        <div class="filters" aria-label="بحث وتصفية الروايات">
-          <label class="sr-only" for="searchInput">ابحث عن رواية أو كاتب</label>
-          <input class="search-input" id="searchInput" type="search" placeholder="ابحث عن رواية أو كاتب">
-          <label class="sr-only" for="categoryFilter">تصفية حسب التصنيف</label>
-          <select class="select" id="categoryFilter" aria-label="تصفية حسب التصنيف">
-            <option value="all">كل التصنيفات</option>
-            <option value="غموض">غموض</option>
-            <option value="فانتازيا">فانتازيا</option>
-            <option value="رومانسي">رومانسي</option>
-            <option value="مغامرة">مغامرة</option>
-            <option value="دراما">دراما</option>
-            <option value="خيال علمي">خيال علمي</option>
-            <option value="عام">عام</option>
-          </select>
+
+          <div class="novels-grid" id="novelsGrid">
+          <div class="empty-state">جاري تحميل الروايات...</div>
         </div>
       </div>
 
-      <div class="novels-grid" id="novelsGrid">
-        <div class="empty-state">جاري تحميل الروايات...</div>
-      </div>
+      <aside class="home-sidebar" aria-label="مختارات ونقاشات">
+        <section class="panel" id="featuredNovel">
+          <p class="muted">جاري تحميل الرواية المميزة...</p>
+        </section>
+        <section class="panel">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">الأكثر قراءة</span>
+              <h2>اختيارات القرّاء</h2>
+            </div>
+          </div>
+          <div class="side-list" id="topNovels"><p class="muted">جاري التحميل...</p></div>
+        </section>
+        <section class="panel" id="discussion">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow">النقاش الأدبي</span>
+              <h2>أحدث التعليقات</h2>
+              <p class="muted">تظهر التعليقات بعد اعتماد الإدارة من صفحة الرواية.</p>
+            </div>
+          </div>
+          <div class="side-list" id="recentComments"><p class="muted">جاري التحميل...</p></div>
+        </section>
+      </aside>
     </section>
   </main>
 
@@ -108,3 +128,5 @@
   <script src="js/supabase.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/main.js"></script>
+</body>
+</html>      
