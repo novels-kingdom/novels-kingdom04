@@ -278,9 +278,92 @@ async function addComment({ novelId, name, text }) {
     text: safeText,
     approved: user?.role === 'admin'
   };
-  const { data, error } = await client.from('comments').insert(row).select('*').single();
+  const { error } = await client.from('comments').insert(row);
+  if (error) throw error;
+  return normalizeComment(row);
+}
+
+
+async function getStats() {
+  const client = await requireClient();
+
+  const [novelsResult, commentsResult, readsResult] = await Promise.all([
+    client.from('novels').select('id', { count: 'exact', head: true }).eq('approved', true),
+    client.from('comments').select('id', { count: 'exact', head: true }).eq('approved', true),
+    client.from('novels').select('reads').eq('approved', true)
+  ]);
+
+  if (novelsResult.error) throw novelsResult.error;
+  if (commentsResult.error) throw commentsResult.error;
+  if (readsResult.error) throw readsResult.error;
+
+  return {
+    novelsCount: novelsResult.count || 0,
+    commentsCount: commentsResult.count || 0,
+    readsCount: (readsResult.data || []).reduce((sum, novel) => sum + Number(novel.reads || 0), 0)
+  };
+}
+
+async function getRecentComments(limit = 6, includePending = false) {
+  const client = await requireClient();
+  let query = client
+    .from('comments')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (!includePending) query = query.eq('approved', true);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data || []).map(normalizeComment);
+}
+
+async function setNovelApproval(id, approved) {
+  const client = await requireClient();
+  const novelId = cleanText(id);
+  if (!novelId) throw new Error('الرواية غير محددة.');
+
+  const { data, error } = await client
+    .from('novels')
+    .update({ approved: Boolean(approved) })
+    .eq('id', novelId)
+    .select('*')
+    .single();
+  if (error) throw error;
+  return normalizeNovel(data);
+}
+
+async function deleteNovel(id) {
+  const client = await requireClient();
+  const novelId = cleanText(id);
+  if (!novelId) throw new Error('الرواية غير محددة.');
+
+  const { error } = await client.from('novels').delete().eq('id', novelId);
+  if (error) throw error;
+}
+
+async function setCommentApproval(id, approved) {
+  const client = await requireClient();
+  const commentId = cleanText(id);
+  if (!commentId) throw new Error('التعليق غير محدد.');
+
+  const { data, error } = await client
+    .from('comments')
+    .update({ approved: Boolean(approved) })
+    .eq('id', commentId)
+    .select('*')
+    .single();
   if (error) throw error;
   return normalizeComment(data);
+}
+
+async function deleteComment(id) {
+  const client = await requireClient();
+  const commentId = cleanText(id);
+  if (!commentId) throw new Error('التعليق غير محدد.');
+
+  const { error } = await client.from('comments').delete().eq('id', commentId);
+  if (error) throw error;
 }
 
 async function getDashboardData() {
@@ -292,10 +375,12 @@ async function getDashboardData() {
   const commentCounts = await Promise.all(
     visibleNovels.map((novel) => getComments(novel.id, user.role === 'admin').then((items) => items.length).catch(() => 0))
   );
+  const recentComments = user.role === 'admin' ? await getRecentComments(20, true) : [];
 
   return {
     user,
     novels: visibleNovels,
+    comments: recentComments,
     commentsCount: commentCounts.reduce((sum, count) => sum + count, 0),
     allNovels: novels
   };
@@ -311,8 +396,14 @@ window.NKBackend = {
   getNovels,
   getNovel,
   incrementNovelReads,
+  getStats,
+  getRecentComments,
   createNovel,
   getComments,
   addComment,
+  setNovelApproval,
+  deleteNovel,
+  setCommentApproval,
+  deleteComment,
   getDashboardData
 };
