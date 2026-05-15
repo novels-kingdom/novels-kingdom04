@@ -176,14 +176,86 @@ chapters: [{
   }
 }
 
-function dashboardNovelRow(novel) {
+function dashboardNovelRow(novel, canManage = false) {
+  const statusClass = novel.approved ? 'published' : 'draft';
+  const approvalLabel = novel.approved ? 'إلغاء النشر' : 'اعتماد النشر';
+  const actions = canManage
+    ? `<div class="dashboard-actions">
+        <button class="btn btn-small btn-secondary" type="button" data-novel-approval="${NK.escapeHtml(novel.id)}" data-approved="${String(!novel.approved)}">${approvalLabel}</button>
+        <button class="btn btn-small btn-danger" type="button" data-novel-delete="${NK.escapeHtml(novel.id)}">حذف</button>
+      </div>`
+    : '';
+
   return `<article class="activity-item">
     <div>
       <h3>${NK.escapeHtml(novel.title)}</h3>
       <p class="muted">${NK.escapeHtml(novel.category)} · ${NK.escapeHtml(novel.status)} · ${Number(novel.reads).toLocaleString('ar')} قراءة</p>
     </div>
-    <span class="tag">${novel.approved ? 'منشورة' : 'بانتظار المراجعة'}</span>
+    <div class="dashboard-row-meta">
+      <span class="status ${statusClass}">${novel.approved ? 'منشورة' : 'بانتظار المراجعة'}</span>
+      ${actions}
+    </div>
   </article>`;
+}
+
+function dashboardCommentRow(comment) {
+  const date = comment.createdAt ? new Date(comment.createdAt).toLocaleDateString('ar') : '';
+  return `<article class="activity-item">
+    <div>
+      <h3>${NK.escapeHtml(comment.name)}</h3>
+      <p class="muted">${NK.escapeHtml(comment.text)}</p>
+      <small class="muted">${NK.escapeHtml(date)}</small>
+    </div>
+    <div class="dashboard-row-meta">
+      <span class="status ${comment.approved ? 'published' : 'draft'}">${comment.approved ? 'منشور' : 'بانتظار المراجعة'}</span>
+      <div class="dashboard-actions">
+        <button class="btn btn-small btn-secondary" type="button" data-comment-approval="${NK.escapeHtml(comment.id)}" data-approved="${String(!comment.approved)}">${comment.approved ? 'إخفاء' : 'اعتماد'}</button>
+        <button class="btn btn-small btn-danger" type="button" data-comment-delete="${NK.escapeHtml(comment.id)}">حذف</button>
+      </div>
+    </div>
+  </article>`;
+}
+
+async function handleDashboardAction(event) {
+  const approvalNovelId = event.target.closest('[data-novel-approval]')?.dataset.novelApproval;
+  const deleteNovelId = event.target.closest('[data-novel-delete]')?.dataset.novelDelete;
+  const approvalCommentId = event.target.closest('[data-comment-approval]')?.dataset.commentApproval;
+  const deleteCommentId = event.target.closest('[data-comment-delete]')?.dataset.commentDelete;
+
+  if (!approvalNovelId && !deleteNovelId && !approvalCommentId && !deleteCommentId) return;
+
+  const button = event.target.closest('button');
+  if (button) button.disabled = true;
+
+  try {
+    if (approvalNovelId) {
+      await NKBackend.setNovelApproval(approvalNovelId, event.target.closest('[data-novel-approval]').dataset.approved === 'true');
+      NK.showToast('تم تحديث حالة الرواية.');
+    }
+
+    if (deleteNovelId) {
+      if (!confirm('هل أنت متأكد من حذف هذه الرواية وكل تعليقاتها؟')) return;
+      await NKBackend.deleteNovel(deleteNovelId);
+      NK.showToast('تم حذف الرواية.');
+    }
+
+    if (approvalCommentId) {
+      await NKBackend.setCommentApproval(approvalCommentId, event.target.closest('[data-comment-approval]').dataset.approved === 'true');
+      NK.showToast('تم تحديث حالة التعليق.');
+    }
+
+    if (deleteCommentId) {
+      if (!confirm('هل أنت متأكد من حذف هذا التعليق؟')) return;
+      await NKBackend.deleteComment(deleteCommentId);
+      NK.showToast('تم حذف التعليق.');
+    }
+
+    await renderDashboard();
+  } catch (error) {
+    NK.showToast(NK.formatError(error, 'تعذر تنفيذ العملية.'), 'error');
+  } finally {
+    if (button) button.disabled = false;
+  }
 }
 
 async function renderDashboard() {
@@ -193,10 +265,10 @@ async function renderDashboard() {
   root.innerHTML = '<section class="panel"><p class="muted">جاري تحميل لوحة التحكم...</p></section>';
 
   try {
-    const { user, novels, commentsCount, allNovels } = await NKBackend.getDashboardData();
+    const { user, novels, comments = [], commentsCount, allNovels } = await NKBackend.getDashboardData();
 
     if (!user) {
-root.innerHTML = `<section class="panel">
+      root.innerHTML = `<section class="panel">
         <span class="eyebrow">تسجيل الدخول مطلوب</span>
         <h1>لوحة التحكم</h1>
         <p class="muted">سجّل الدخول لمتابعة رواياتك وتعليقاتك.</p>
@@ -205,12 +277,14 @@ root.innerHTML = `<section class="panel">
       return;
     }
 
-const totalNovels = user.role === 'admin' ? allNovels.length : novels.length;
+    const canManage = user.role === 'admin'
+    const totalNovels = canManage ? allNovels.length : novels.length;
     const pendingNovels = novels.filter((novel) => !novel.approved).length;
+    const pendingComments = comments.filter((comment) => !comment.approved).length;
 
     root.innerHTML = `<section class="dashboard-hero panel">
       <div>
-        <span class="eyebrow">${user.role === 'admin' ? 'مدير المنصة' : 'حساب الكاتب'}</span>
+        <span class="eyebrow">${canManage ? 'مدير المنصة' : 'حساب الكاتب'}</span>
         <h1>مرحبًا، ${NK.escapeHtml(user.name)}</h1>
         <p class="muted">${NK.escapeHtml(user.email)}</p>
       </div>
@@ -219,21 +293,36 @@ const totalNovels = user.role === 'admin' ? allNovels.length : novels.length;
 
     <section class="stats-grid">
       <article class="stat-card"><strong>${totalNovels}</strong><span>رواية</span></article>
-      <article class="stat-card"><strong>${pendingNovels}</strong><span>بانتظار المراجعة</span></article>
-      <article class="stat-card"><strong>${commentsCount}</strong><span>تعليق</span></article>
+      <article class="stat-card"><strong>${pendingNovels}</strong><span>رواية بانتظار المراجعة</span></article>
+      <article class="stat-card"><strong>${canManage ? pendingComments : commentsCount}</strong><span>${canManage ? 'تعليق بانتظار المراجعة' : 'تعليق'}</span></article>
     </section>
 
     <section class="panel">
       <div class="section-head">
         <div>
-          <h2>${user.role === 'admin' ? 'كل الروايات' : 'رواياتي'}</h2>
-          <p class="muted">تابع حالة الروايات وأرقام القراءة.</p>
+<h2>${canManage ? 'إدارة الروايات' : 'رواياتي'}</h2>
+          <p class="muted">${canManage ? 'اعتمد الروايات أو ألغِ نشرها أو احذف غير المناسب.' : 'تابع حالة الروايات وأرقام القراءة.'}</p>
         </div>
       </div>
       <div class="activity-list">
-        ${novels.length ? novels.map(dashboardNovelRow).join('') : '<p class="muted">لا توجد روايات بعد.</p>'}
+${novels.length ? novels.map((novel) => dashboardNovelRow(novel, canManage)).join('') : '<p class="muted">لا توجد روايات بعد.</p>'}
       </div>
-    </section>`;
+</section>
+
+    ${canManage ? `<section class="panel">
+      <div class="section-head">
+        <div>
+          <h2>مراجعة التعليقات</h2>
+          <p class="muted">التعليقات الجديدة تبقى مخفية حتى تعتمدها الإدارة.</p>
+        </div>
+      </div>
+      <div class="activity-list">
+        ${comments.length ? comments.map(dashboardCommentRow).join('') : '<p class="muted">لا توجد تعليقات للمراجعة.</p>'}
+      </div>
+    </section>` : ''}`;
+
+    root.removeEventListener('click', handleDashboardAction);
+    root.addEventListener('click', handleDashboardAction);
   } catch (error) {
 root.innerHTML = `<section class="panel"><p class="muted">${NK.escapeHtml(NK.formatError(error, 'تعذر تحميل لوحة التحكم.'))}</p></section>`;
   }
