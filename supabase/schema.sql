@@ -296,7 +296,7 @@ with check (public.is_admin());
 drop policy if exists "settings_select_public" on public.settings;
 drop policy if exists "settings_admin_all" on public.settings;
 drop policy if exists "public reads settings" on public.settings;
- drop policy if exists "admins manage settings" on public.settings;
+drop policy if exists "admins manage settings" on public.settings;
 
 create policy "settings_select_public"
 on public.settings for select
@@ -321,6 +321,22 @@ on conflict (id) do update set
   value = excluded.value,
   updated_at = now();
 insert into public.novels (id, title, author, category, type, status, reads, rating, description, cover, chapters, featured, approved, premium)
+values (
+  'shadows-of-ink',
+  'ظلال الحبر',
+  'هيئة التحرير',
+  'غموض',
+  'عربية',
+  'مستمرة',
+  1240,
+  4.7,
+  'كاتب شاب يكتشف أن مخطوطته القديمة تغيّر مصائر كل من يقرأها.',
+  'https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=900&q=80',
+  '[{"title":"الفصل الأول: الورقة السوداء","body":"كانت المدينة تغفو على ضوء مصابيح باهتة، حين وجد آدم الورقة التي لم يكن يجب أن تُكتب. لم تحمل توقيعًا، لكنها عرفت اسمه وسرّه الأقدم."}]'::jsonb,
+  true,
+  true,
+  false
+)
 on conflict (id) do update set
   title = excluded.title,
   author = excluded.author,
