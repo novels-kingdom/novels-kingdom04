@@ -22,3 +22,6 @@ th { color: var(--muted); font-weight: 800; }
 .activity-item { padding: 15px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.045); display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 @media (max-width: 900px) { .stats-grid, .dashboard-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 650px) { .stats-grid, .dashboard-grid { grid-template-columns: 1fr; } .dashboard-hero, .activity-item { flex-direction: column; align-items: stretch; } }
+.dashboard-row-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.dashboard-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+@media (max-width: 650px) { .dashboard-row-meta { justify-content: flex-start; } }
