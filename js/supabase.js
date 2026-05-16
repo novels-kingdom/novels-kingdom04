@@ -2,8 +2,8 @@
 // مفتاح publishable آمن للنشر في الواجهة عند تفعيل Row Level Security.
 // لا تضع service_role أو كلمات مرور قاعدة البيانات هنا أبدًا.
 window.NK_SUPABASE = window.NK_SUPABASE || {
-  url: 'https://pblyetwbtiwvdbgvuixhs.supabase.co',
-  publishableKey: 'sb_publishable_8VYhJI_VHzE-NgdM-SR9kg_W6jNTh__'
+  url: 'https://jdgcnhnckeyehazikurx.supabase.co',
+  publishableKey: 'sb_publishable_CXbVXBLU_qVbbrc3LPjaag_Cs4zgiVI'
 };
 
 const NK_SUPABASE_CONFIG = window.NK_SUPABASE;
